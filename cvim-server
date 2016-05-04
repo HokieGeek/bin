@@ -1,0 +1,22 @@
+#!/bin/bash
+
+scriptname="cvim_server.py"
+
+startServer() {
+    if [ `pgrep ${scriptname} | wc -l` -eq 0 ]; then
+        interpreter="`sed -n '1p' ${scriptpath} | sed 's/#!//'`"
+        nohup ${interpreter} ${scriptpath} &
+    fi
+}
+
+stopServer() {
+    pkill -f ${scriptname}
+}
+
+scriptpath=`find ~/.config/google-chrome -name ${scriptname} -print | head -1`
+case $1 in
+    start) startServer ;;
+    stop) stopServer ;;
+    restart) stopServer; startServer ;;
+*) echo "USAGE: `basename $0` [start|stop|restart]" ;;
+esac

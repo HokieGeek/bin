@@ -1,0 +1,5 @@
+#!/bin/sh
+
+for k in `git branch -a | grep -v HEAD | sed -e 's;remotes;;' -e s/^..//`;do
+    echo -e `git log -1 --pretty=format:"%Cgreen%ci %Cblue%cr%Creset" "$k"`\\t"$k"
+done | sort

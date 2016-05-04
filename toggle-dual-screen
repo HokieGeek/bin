@@ -1,0 +1,12 @@
+#!/bin/bash
+
+xrandr | grep "HDMI1 connected" && {
+    echo "Toggling on"
+    xrandr --output LVDS1 --auto --output HDMI1 --auto --right-of LVDS1
+} || {
+    echo "Toggling off"
+    xrandr --output LVDS1 --auto --output HDMI1 --off
+}
+
+# RULE: SUBSYSTEM=="drm", ACTION=="change", RUN+="blah"
+# cat /sys/class/drm/card0-HDMI-A-1/status (connected | disconnected)

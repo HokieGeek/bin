@@ -1,0 +1,6 @@
+#!/bin/sh
+
+go test -covermode=count -coverprofile=/tmp/$$.coverout $@
+go tool cover -func=/tmp/$$.coverout
+go tool cover -html=/tmp/$$.coverout
+rm -rf /tmp/$$.coverout

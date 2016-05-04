@@ -1,0 +1,45 @@
+#!/bin/bash
+
+[[ $1 == "--config" ]] && {
+    # me=`basename $0`
+    git config --global merge.tool vimgitdiff
+    git config --global mergetool.vimgitdiff.cmd 'vimgitdiff $BASE $LOCAL $REMOTE $MERGED'
+    git config --global mergetool.vimgitdiff.trustExitCode true
+    git config --global mergetool.vimgitdiff.keepBackup false
+    exit 0
+}
+
+BASE=$1
+LOCAL=$2
+REMOTE=$3
+MERGED=$4
+# Shell-escapes the variables
+printf -v QBASE '%q' "${BASE}"
+printf -v QLOCAL '%q' "${LOCAL}"
+printf -v QREMOTE '%q' "${REMOTE}"
+
+merged_remote="${MERGED}.REMOTE.$$.tmp"
+merged_local="${MERGED}.LOCAL.$$.tmp"
+
+# Cleanup
+trap 'rm -rf ${merged_remote} ${merged_local}' SIGINT SIGTERM EXIT
+
+# Create the merged files
+sed -e '/^<<<<<<< /,/^=======$/d' -e '/^>>>>>>> /d' "${MERGED}" > "${merged_remote}"
+sed -e '/^=======$/,/^>>>>>>> /d' -e '/^<<<<<<< /d' "${MERGED}" > "${merged_local}"
+
+# Kick off vim
+vim -f -R -d "${merged_local}" "${merged_remote}" \
+    -c ":setlocal nomodifiable | wincmd t | setlocal noreadonly modifiable write" \
+    -c ":tabedit $QLOCAL | silent file LOCAL" \
+    -c ":vertical diffsplit $QBASE | silent file BASE" \
+    -c ":vertical diffsplit $QREMOTE | silent file REMOTE" \
+    -c ":diffsplit $QBASE | silent file BASE" \
+    -c ":windo setlocal nomodifiable | wincmd t" \
+    -c ":tabnew | setlocal buftype=nofile | exec \"silent r !git log --graph --pretty=format:'\\\\%h(\\\\%cr) <\\\\%an> -\\\\%d \\\\%s' ${MERGED}\" | 0d_" \
+    -c ":silent file log" \
+    -c ":windo setlocal nomodifiable | tabfirst"
+
+retval=$?
+[[ $retval == "0" ]] && cat "${merged_local}" > "${MERGED}"
+exit $retval

@@ -1,0 +1,7 @@
+#!/bin/sh
+
+port=$1
+
+tput sc; tput cup 0 $(($(tput cols)-31)); echo '!! BROADCASTING ON PORT '${port}' !!'; tput rc
+#script -qf | tee >(nc -kl ${port})
+#TODO: trap that does a 'clear' when exiting the script?

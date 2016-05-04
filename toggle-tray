@@ -1,0 +1,16 @@
+#!/bin/bash
+
+die() {
+    echo "die"
+    ps aux | grep "bash $0" | grep -v grep | awk '{ print $2 }' | xargs kill -9
+    # killall `basename $0`
+}
+trap die SIGTERM
+
+ps aux | grep "bash $0" | grep -v grep
+if [ "`ps aux | grep -c "bash $0" | grep -v grep | wc -l`" != "1" ]; then
+    die
+else
+    echo "oh oh"
+    stalonetray >/dev/null 2>/dev/null
+fi

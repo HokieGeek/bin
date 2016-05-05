@@ -1,0 +1,14 @@
+#!/bin/bash
+
+input="$1"
+
+xrandr | grep "${input} connected" && {
+    echo "Toggling ${input} on"
+    xrandr --output ${input} --auto --right-of $(xrandr | awk '$1 !~ /VIRTUAL/ && $2 ~ /^connected$/ { print $1 }')
+} || {
+    echo "Toggling ${input} off"
+    xrandr --output ${input} --off
+}
+
+# RULE: SUBSYSTEM=="drm", ACTION=="change", RUN+="blah"
+# cat /sys/class/drm/card0-HDMI-A-1/status (connected | disconnected)

@@ -1,0 +1,7 @@
+#!/bin/bash
+
+input="VIRTUAL1"
+xrandr | grep "${input} disconnected" || {
+    xrandr --addmode ${input} $(xrandr | awk '$1 !~ /VIRTUAL/ && $2 ~ /^connected$/ && NR == 1 { print $3 }')
+}
+toggle-video-input ${input}

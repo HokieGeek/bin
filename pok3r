@@ -1,8 +1,8 @@
 #!/bin/bash
 
 declare -A keymap
-# keymap["monb-d"]="XF86_MonBrightnessDown"
-keymap["monb-d"]="XF86_Calculator"
+# keymap["monb-d"]="XF86_Calculator"
+keymap["monb-d"]="XF86_MonBrightnessDown"
 keymap["monb-u"]="XF86_MonBrightnessUp"
 
 args=""
@@ -10,9 +10,7 @@ while [ $# -gt 0 ]; do
     case $1 in
         # L/R Shift, L/R Ctrl, L/R Alt, L/R Super
         -[sScCaAuU]) args="${args} $1" ;;
-        [^-]*)
-            args="${args} -e $([ "${keymap[$1]+isset}" ] && echo ${keymap[$1]} || echo $1)"
-            ;;
+        [^-]*) args="${args} -e $([ "${keymap[$1]+isset}" ] && echo ${keymap[$1]} || echo $1)" ;;
     esac
     shift
 done

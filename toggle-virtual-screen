@@ -1,7 +1,17 @@
 #!/bin/bash
 
 input="VIRTUAL1"
+set -x
 xrandr | grep "${input} disconnected" || {
-    xrandr --addmode ${input} $(xrandr | awk '$1 !~ /VIRTUAL/ && $2 ~ /^connected$/ && NR == 1 { print $3 }')
+    xrandr --addmode ${input} $(xrandr | awk '$1 !~ /VIRTUAL/ && $2 ~ /^connected$/ { sub("+.*$", "", $3); print $3 }')
 }
-toggle-video-input ${input}
+# TODO
+# toggle-video-input ${input}
+
+# xrandr | grep "${input} connected" && {
+#     echo "Toggling ${input} on"
+#     xrandr --output ${input} --auto --right-of $(xrandr | awk '$1 !~ /VIRTUAL/ && $2 ~ /^connected$/ { print $1 }')
+# } || {
+#     echo "Toggling ${input} off"
+#     xrandr --output ${input} --off
+# }

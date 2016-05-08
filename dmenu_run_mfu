@@ -18,19 +18,20 @@ NR == FNR && NF > 1 {
 }
 ' <(sort -hr ${list}) - | dmenu "$@" | awk '
 FILENAME == "-" {
-    sel = $1
+    sel = $0
+    sel_cmd = $1
     next
 }
 $0 !~ /^ *$/ {
     mfu[$2] = $1
-    if (sel == $2) {
+    if (sel_cmd == $2) {
         mfu[$2]++
     }
 }
 END {
-    if (length(sel) > 0 && sel !~ "^ *$") {
-        if (!(sel in mfu)) {
-            mfu[sel] = 1
+    if (length(sel_cmd) > 0 && sel_cmd !~ "^ *$") {
+        if (!(sel_cmd in mfu)) {
+            mfu[sel_cmd] = 1
         }
         for (cmd in mfu) {
             print mfu[cmd] " " cmd > FILENAME

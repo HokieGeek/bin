@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 here=$(cd $(dirname $0); pwd)
 me=${here}/$(basename $0)
@@ -8,25 +8,49 @@ me=${here}/$(basename $0)
     exit 1
 }
 
-case ${1} in
-    purple) fg_hex="#5f0087"; fg_xterm="55"; ;;
-      blue) fg_hex="#000087"; fg_xterm="18"; ;;
-      cyan) fg_hex="#00d7af"; fg_xterm="43"; ;;
-     green) fg_hex="#005f00"; fg_xterm="22"; ;;
-     olive) fg_hex="#87af00"; fg_xterm="106"; ;;
-    yellow) fg_hex="#ffff00"; fg_xterm="11"; ;;
-    orange) fg_hex="#af5f00"; fg_xterm="130"; ;;
-       red) fg_hex="#870000"; fg_xterm="88"; ;;
-      grey) fg_hex="#9e9e9e"; fg_xterm="247"; ;;
-     white) fg_hex="#ffffff"; fg_xterm="231"; ;;
-
-  --colors) awk '$1 ~ /^\s*[a-z]*)/ { sub(/[^a-z]/, "", $1); print $1 }' ${me}
-            exit 0
+if [[ "$1" =~ "--cycle" ]]; then
+    [ $# -gt 1 ] && delay=$2 || delay="30s"
+    ([ "$1" == "--cycle-all" ] && ./list-colors --porcelain || $me --colors) \
+        | awk '{ sub("colour", ""); sub("#[0-9a-f]*", "\"&\""); print }' \
+            | while read nums; do
+                ${me} $nums
+                sleep ${delay}
+            done
+    exit
+elif [ $# -eq 2 ]; then
+    while [ $# -gt 0 ]; do
+        case $1 in
+            [0-9]*) fg_xterm="$1" ;;
+            *) fg_hex="$1" ;;
+        esac
+        shift
+    done
+else
+    case ${1} in
+        purple) fg_hex="#5f0087"; fg_xterm="55"; printf "($1) "; ;;
+          blue) fg_hex="#000087"; fg_xterm="18"; printf "($1) "; ;;
+          cyan) fg_hex="#00d7af"; fg_xterm="43"; printf "($1) "; ;;
+         green) fg_hex="#005f00"; fg_xterm="22"; printf "($1) "; ;;
+         olive) fg_hex="#87af00"; fg_xterm="106"; printf "($1) "; ;;
+        yellow) fg_hex="#ffff00"; fg_xterm="11"; printf "($1) "; ;;
+        orange) fg_hex="#af5f00"; fg_xterm="130"; printf "($1) "; ;;
+           red) fg_hex="#870000"; fg_xterm="88"; printf "($1) "; ;;
+          grey) fg_hex="#9e9e9e"; fg_xterm="247"; printf "($1) "; ;;
+         white) fg_hex="#ffffff"; fg_xterm="231"; printf "($1) "; ;;
+        random)
+            exec ${me} $(${me} --colors | awk 'BEGIN { colors[-1]=""; srand() }
+                                          $0 !~ /random/ { colors[length(colors)-1] = $0 }
+                                          END { print colors[int((length(colors)-2) * rand())] }')
             ;;
-         *) echo "ERROR: You're smoking crack"
-            exit 2
-            ;;
-esac
+      --colors) awk '$1 ~ /^\s*[a-z]*)/ { sub(/[^a-z]/, "", $1); print $1 }' ${me} | sort
+                exit 0
+                ;;
+             *) echo "Stop smoking crack" >&2
+                exit 2
+                ;;
+    esac
+fi
+echo "${fg_hex}, colour${fg_xterm}"
 
 ## Update xmonad
 sed "/colorForeground\s*=/s/\".*\"/\"${fg_hex}\"/g" -i ~/.xmonad/xmonad.hs

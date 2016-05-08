@@ -1,31 +1,40 @@
 #!/bin/bash
 
+threshold=1
 list="$HOME/.dmenu_run_mfu"
 [ ! -f "${list}" ] && touch "${list}"
 
 dmenu_path | awk '
 $0 ~ /^ *$/ { next }
 NR == FNR && NF == 2 {
-    mfu[$2] = $1
-    print $2
+    if ($1 > '${threshold}') {
+        mfu[$2] = $1
+        print $2
+    }
     next
 }
 !($0 in mfu) {
     print
 }
 ' <(sort -hr ${list}) - | dmenu "$@" | awk '
-NR == FNR {
+FILENAME == "-" {
     sel = $0
     next
 }
 $0 !~ /^ *$/ {
     mfu[$2] = $1
-    if (sel == $2) { mfu[$2]++ }
+    if (sel == $2) {
+        mfu[$2]++
+    }
 }
 END {
-    if (length(sel) > 0) {
-        if (!(sel in mfu)) { mfu[sel] = 1 }
-        for (cmd in mfu) { print mfu[cmd] " " cmd > FILENAME }
+    if (length(sel) > 0 && sel !~ "^ *$") {
+        if (!(sel in mfu)) {
+            mfu[sel] = 1
+        }
+        for (cmd in mfu) {
+            print mfu[cmd] " " cmd > FILENAME
+        }
     }
     print sel
 }

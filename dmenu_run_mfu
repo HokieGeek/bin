@@ -6,7 +6,7 @@ list="$HOME/.dmenu_run_mfu"
 
 dmenu_path | awk '
 $0 ~ /^ *$/ { next }
-NR == FNR && NF == 2 {
+NR == FNR && NF > 1 {
     if ($1 > '${threshold}') {
         mfu[$2] = $1
         print $2
@@ -18,7 +18,7 @@ NR == FNR && NF == 2 {
 }
 ' <(sort -hr ${list}) - | dmenu "$@" | awk '
 FILENAME == "-" {
-    sel = $0
+    sel = $1
     next
 }
 $0 !~ /^ *$/ {

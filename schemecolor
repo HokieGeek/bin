@@ -10,7 +10,7 @@ me=${here}/$(basename $0)
 
 if [[ "$1" =~ "--cycle" ]]; then
     [ $# -gt 1 ] && delay=$2 || delay="30s"
-    ([ "$1" == "--cycle-all" ] && ./list-colors --porcelain || $me --colors) \
+    ([ "$1" == "--cycle-all" ] && list-colors --porcelain || $me --colors) \
         | awk '{ sub("colour", ""); sub("#[0-9a-f]*", "\"&\""); print }' \
             | while read nums; do
                 ${me} $nums

@@ -5,14 +5,15 @@ list="$HOME/.dmenu_run_mfu"
 
 dmenu_path | awk '
 $0 ~ /^ *$/ { next }
-NR == FNR {
+NR == FNR && NF == 2 {
     mfu[$2] = $1
     print $2
     next
 }
 !($0 in mfu) {
     print
-} ' <(sort -hr ${list}) - | dmenu "$@" | awk '
+}
+' <(sort -hr ${list}) - | dmenu "$@" | awk '
 NR == FNR {
     sel = $0
     next

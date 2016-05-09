@@ -8,8 +8,8 @@ dmenu_path | awk '
 $0 ~ /^ *$/ { next }
 NR == FNR && NF > 1 {
     if ($1 > '${threshold}') {
-        mfu[$2] = $1
-        print $2
+        mfu[$3] = $1
+        print $3
     }
     next
 }
@@ -17,25 +17,35 @@ NR == FNR && NF > 1 {
     print
 }
 ' <(sort -hr ${list}) - | dmenu "$@" | awk '
+BEGIN {
+    ageOut = strftime("%s")-((86400 * 7) * 8)
+}
 FILENAME == "-" {
     sel = $0
     sel_cmd = $1
     next
 }
+$2 <= ageOut {
+    next
+}
 $0 !~ /^ *$/ {
-    mfu[$2] = $1
-    if (sel_cmd == $2) {
-        mfu[$2]++
+    mfu[$3] = $1
+    if (sel_cmd == $3) {
+        mfu[$3]++
+        mfu_timestamp[$3] = strftime("%s")
+    } else {
+        mfu_timestamp[$3] = $2
     }
 }
 END {
     if (length(sel_cmd) > 0 && sel_cmd !~ "^ *$") {
         if (!(sel_cmd in mfu)) {
             mfu[sel_cmd] = 1
+            mfu_timestamp[sel_cmd] = strftime("%s")
         }
-        for (cmd in mfu) {
-            print mfu[cmd] " " cmd > FILENAME
-        }
+    }
+    for (cmd in mfu) {
+        print mfu[cmd] " " mfu_timestamp[cmd] " " cmd > FILENAME
     }
     print sel
 }

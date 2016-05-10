@@ -1,0 +1,3 @@
+#!/bin/sh
+
+echo "google-chrome-unstable google-chrome-stable chromium firefox surf lynx" | get-from-path

@@ -3,13 +3,13 @@
 threshold=1
 terminal="xterm"
 list="$HOME/.dmenu_run_mfu"
-dmenu_args=""
+# dmenu_args=""
 
 while [ $# -gt 0 ]; do
     case $1 in
     --threshold) shift; threshold=$1 ;;
     --terminal) shift; terminal=$1 ;;
-    *) dmenu_args="${dmenu_args} $1" ;;
+    *) dmenu_args="${dmenu_args}$1 " ;;
     esac
     shift
 done
@@ -33,7 +33,7 @@ BEGIN {
     print
 }
 ' \
-| dmenu "${dmenu_args}" \
+| dmenu $dmenu_args \
 | awk -v shell=${SHELL:-"/bin/sh"} -v terminal=${terminal} '
 BEGIN {
     ageOut = strftime("%s")-((86400 * 7) * 8)

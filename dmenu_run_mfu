@@ -4,24 +4,28 @@ threshold=1
 list="$HOME/.dmenu_run_mfu"
 [ ! -f "${list}" ] && touch "${list}"
 
-dmenu_path | awk '
-$0 ~ /^ *$/ { next }
-NR == FNR && NF > 1 {
-    if ($1 > '${threshold}') {
-        mfu[$3] = $1
-        print $3
+dmenu_path | awk -v threshold=${threshold} -v mfu_file=${list} '
+BEGIN {
+    while((getline < mfu_file) > 0) {
+        if ($1 > threshold) {
+            mfu[$3] = $1
+            print $3
+        }
     }
-    next
+    close(mfu_file)
 }
 !($0 in mfu) {
     print
 }
-' <(sort -hr ${list}) - | dmenu "$@" | awk '
+' \
+| dmenu "$@" \
+| awk -v shell=${SHELL:-"/bin/sh"} -v terminal="st" '
 BEGIN {
     ageOut = strftime("%s")-((86400 * 7) * 8)
 }
 FILENAME == "-" {
     sel = $0
+    sub("#$", "", $1)
     sel_cmd = $1
     next
 }
@@ -45,8 +49,17 @@ END {
         }
     }
     for (cmd in mfu) {
-        print mfu[cmd] " " mfu_timestamp[cmd] " " cmd > FILENAME
+        mfu_out = sprintf( "%s%s %s %s\n", mfu_out, mfu[cmd], mfu_timestamp[cmd], cmd)
     }
-    print sel
+    system(sprintf("echo \"%s\" | sort -gr > %s", mfu_out, FILENAME))
+
+    if (substr(sel, length(sel), 1) == "#") {
+        sub("#$", "", sel)
+        system(sprintf("%s -e \"%s\"", terminal, sel)) # TODO: select terminal
+        # printf("%s -e \"%s\"", terminal, sel) # TODO: select terminal
+    } else {
+        print sel | shell
+        close(shell)
+    }
 }
-' - ${list} | ${SHELL:-"/bin/sh"} &
+' - ${list} &

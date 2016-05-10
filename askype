@@ -1,0 +1,4 @@
+#!/bin/sh
+
+apulse32 skype
+# TODO: perform a good cleanup upon exit

@@ -18,8 +18,13 @@ dmenu_path | awk -v threshold=${threshold} -v mfu_file=${list} '
 BEGIN {
     while((getline < mfu_file) > 0) {
         if ($1 > threshold) {
-            mfu[$3] = $1
-            print $3
+            cnt = $1
+            $1 = ""
+            $2 = ""
+            sub("^ *", "")
+            sub(" *$", "")
+            mfu[$0] = cnt
+            print
         }
     }
     close(mfu_file)
@@ -35,27 +40,31 @@ BEGIN {
 }
 FILENAME == "-" {
     sel = $0
-    sub("#$", "", $1)
-    sel_cmd = $1
     next
 }
 $2 <= ageOut {
     next
 }
 $0 !~ /^ *$/ {
-    mfu[$3] = $1
-    if (sel_cmd == $3) {
-        mfu[$3]++
-        mfu_timestamp[$3] = strftime("%s")
+    cnt = $1
+    ts = $2
+    $1 = ""
+    $2 = ""
+    sub("^ *", "")
+    sub(" *$", "")
+    mfu[$0] = cnt
+    if (sel == $0) {
+        mfu[$0]++
+        mfu_timestamp[$0] = strftime("%s")
     } else {
-        mfu_timestamp[$3] = $2
+        mfu_timestamp[$0] = ts
     }
 }
 END {
-    if (length(sel_cmd) > 0 && sel_cmd !~ "^ *$") {
-        if (!(sel_cmd in mfu)) {
-            mfu[sel_cmd] = 1
-            mfu_timestamp[sel_cmd] = strftime("%s")
+    if (length(sel) > 0 && sel !~ "^ *$") {
+        if (!(sel in mfu)) {
+            mfu[sel] = 1
+            mfu_timestamp[sel] = strftime("%s")
         }
         for (cmd in mfu) {
             mfu_out = sprintf( "%s%s %s %s\n", mfu_out, mfu[cmd], mfu_timestamp[cmd], cmd)

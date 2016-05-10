@@ -1,0 +1,3 @@
+#!/bin/sh
+
+echo "st urxvtc urxvt gnome-terminal xterm" | get-from-path

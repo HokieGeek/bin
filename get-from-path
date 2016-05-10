@@ -1,0 +1,12 @@
+#!/bin/sh
+
+if [ $# -le 0 ]; then
+    while read i; do
+        echo ${i}
+    done
+else
+    echo "$@"
+fi | sed -e 's/ /\n/g' \
+    | while read a; do
+        which $f &>/dev/null && exec echo $f
+    done

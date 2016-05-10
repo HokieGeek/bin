@@ -47,20 +47,20 @@ END {
             mfu[sel_cmd] = 1
             mfu_timestamp[sel_cmd] = strftime("%s")
         }
-    }
-    for (cmd in mfu) {
-        mfu_out = sprintf( "%s%s %s %s\n", mfu_out, mfu[cmd], mfu_timestamp[cmd], cmd)
-    }
-    new_mfu = sprintf("sort -gr > %s", FILENAME)
-    print mfu_out | new_mfu
-    close(new_mfu)
+        for (cmd in mfu) {
+            mfu_out = sprintf( "%s%s %s %s\n", mfu_out, mfu[cmd], mfu_timestamp[cmd], cmd)
+        }
+        new_mfu = sprintf("sort -gr > %s", FILENAME)
+        print mfu_out | new_mfu
+        close(new_mfu)
 
-    if (substr(sel, length(sel), 1) == "#") {
-        sub("#$", "", sel)
-        system(sprintf("%s -e \"%s\"", terminal, sel))
-    } else {
-        print sel | shell
-        close(shell)
+        if (substr(sel, length(sel), 1) == "#") {
+            sub("#$", "", sel)
+            system(sprintf("%s -e \"%s\"", terminal, sel))
+        } else {
+            print sel | shell
+            close(shell)
+        }
     }
 }
 ' - ${list} &

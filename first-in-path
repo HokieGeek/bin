@@ -8,5 +8,5 @@ else
     echo "$@"
 fi | sed -e 's/ /\n/g' \
     | while read a; do
-        which $f &>/dev/null && exec echo $f
+        which $a &>/dev/null && exec echo $a
     done

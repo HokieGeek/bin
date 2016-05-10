@@ -1,8 +1,18 @@
-#!/bin/bash
+#!/bin/sh
 
 threshold=1
+terminal="xterm"
 list="$HOME/.dmenu_run_mfu"
-[ ! -f "${list}" ] && touch "${list}"
+dmenu_args=""
+
+while [ $# -gt 0 ]; do
+    case $1 in
+    --threshold) shift; threshold=$1 ;;
+    --terminal) shift; terminal=$1 ;;
+    *) dmenu_args="${dmenu_args} $1" ;;
+    esac
+    shift
+done
 
 dmenu_path | awk -v threshold=${threshold} -v mfu_file=${list} '
 BEGIN {
@@ -18,8 +28,8 @@ BEGIN {
     print
 }
 ' \
-| dmenu "$@" \
-| awk -v shell=${SHELL:-"/bin/sh"} -v terminal="st" '
+| dmenu "${dmenu_args}" \
+| awk -v shell=${SHELL:-"/bin/sh"} -v terminal=${terminal} '
 BEGIN {
     ageOut = strftime("%s")-((86400 * 7) * 8)
 }

@@ -51,12 +51,13 @@ END {
     for (cmd in mfu) {
         mfu_out = sprintf( "%s%s %s %s\n", mfu_out, mfu[cmd], mfu_timestamp[cmd], cmd)
     }
-    system(sprintf("echo \"%s\" | sort -gr > %s", mfu_out, FILENAME))
+    new_mfu = sprintf("sort -gr > %s", FILENAME)
+    print mfu_out | new_mfu
+    close(new_mfu)
 
     if (substr(sel, length(sel), 1) == "#") {
         sub("#$", "", sel)
-        system(sprintf("%s -e \"%s\"", terminal, sel)) # TODO: select terminal
-        # printf("%s -e \"%s\"", terminal, sel) # TODO: select terminal
+        system(sprintf("%s -e \"%s\"", terminal, sel))
     } else {
         print sel | shell
         close(shell)

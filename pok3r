@@ -1,17 +1,48 @@
 #!/bin/bash
 
+declare -A xdotool_mods
+xdotool_mod["s"]="Shift_L"
+xdotool_mod["S"]="Shift_R"
+xdotool_mod["c"]="Control_L"
+xdotool_mod["C"]="Control_R"
+xdotool_mod["a"]="Alt_L"
+xdotool_mod["A"]="Alt_R"
+xdotool_mod["u"]="Super_L"
+xdotool_mod["U"]="Super_R"
+
 declare -A keymap
 # keymap["monb-d"]="XF86_Calculator"
 keymap["monb-d"]="XF86_MonBrightnessDown"
 keymap["monb-u"]="XF86_MonBrightnessUp"
 
+declare -a tools=("xdotool" "xkev")
+for t in ${tools}; do
+    if which ${t} &>/dev/null; then
+        tool="${t}"
+        break
+    fi
+done
+
 args=""
 while [ $# -gt 0 ]; do
     case $1 in
         # L/R Shift, L/R Ctrl, L/R Alt, L/R Super
-        -[sScCaAuU]) args="${args} $1" ;;
-        [^-]*) args="${args} -e $([ "${keymap[$1]+isset}" ] && echo ${keymap[$1]} || echo $1)" ;;
+        -[sScCaAuU])
+            if [ ${tool} == ${tools[0]} ]; then # xdotool
+                args="${args}$xdotool_mod[$1]+"
+            elif [ ${tool} == ${tools[1]} ]; then # xkev
+                args="${args} $1"
+            fi
+            ;;
+        [^-]*)
+            key=$("${keymap[$1]+isset}" ] && echo ${keymap[$1]} || echo $1)
+            if [ ${tool} == ${tools[0]} ]; then # xdotool
+                args="${args}${key} "
+            elif [ ${tool} == ${tools[1]} ]; then # xkev
+                args="${args} -e ${key}"
+            fi
+            ;;
     esac
     shift
 done
-exec xkev ${args}
+echo "exec ${tool} ${args}"

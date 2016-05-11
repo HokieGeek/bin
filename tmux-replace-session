@@ -1,0 +1,5 @@
+#!/bin/bash
+
+currentSession=$(echo $TMUX | awk -F',' '{ print $NF }')
+selectedSession=$(tmux-select-session)
+# echo "Replace ${currentSession} with ${selectedSession}"

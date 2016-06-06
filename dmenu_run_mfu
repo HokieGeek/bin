@@ -2,8 +2,8 @@
 
 threshold=1
 terminal="xterm"
-list="$HOME/.dmenu_run_mfu"
-# dmenu_args=""
+mfu_file="$HOME/.dmenu_run_mfu"
+[ ! -f ${mfu_file} ] && touch ${mfu_file}
 
 while [ $# -gt 0 ]; do
     case $1 in
@@ -14,65 +14,30 @@ while [ $# -gt 0 ]; do
     shift
 done
 
-dmenu_path | awk -v threshold=${threshold} -v mfu_file=${list} '
-BEGIN {
-    while((getline < mfu_file) > 0) {
-        if ($1 > threshold) {
-            cnt = $1
-            $1 = ""
-            $2 = ""
-            sub("^ *", "")
-            sub(" *$", "")
-            mfu[$0] = cnt
-            print
-        }
-    }
-    close(mfu_file)
-}
-!($0 in mfu) {
+dmenu_path | awk -v threshold=${threshold} '
+FILENAME == "-" && !($0 in mfu) {
     print
+    next
 }
-' \
+$1 > threshold {
+    $1 = ""
+    $2 = ""
+    sub("^ *", "")
+    sub(" *$", "")
+    mfu[$0]=0
+    if (length($0) > 0) {
+        print
+    }
+}
+' ${mfu_file} - \
 | dmenu $dmenu_args \
 | awk -v shell=${SHELL:-"/bin/sh"} -v terminal=${terminal} '
 BEGIN {
     ageOut = strftime("%s")-((86400 * 7) * 8)
 }
 FILENAME == "-" {
-    sel = $0
-    next
-}
-$2 <= ageOut {
-    next
-}
-$0 !~ /^ *$/ {
-    cnt = $1
-    ts = $2
-    $1 = ""
-    $2 = ""
-    sub("^ *", "")
-    sub(" *$", "")
-    mfu[$0] = cnt
-    if (sel == $0) {
-        mfu[$0]++
-        mfu_timestamp[$0] = strftime("%s")
-    } else {
-        mfu_timestamp[$0] = ts
-    }
-}
-END {
-    if (length(sel) > 0 && sel !~ "^ *$") {
-        if (!(sel in mfu)) {
-            mfu[sel] = 1
-            mfu_timestamp[sel] = strftime("%s")
-        }
-        for (cmd in mfu) {
-            mfu_out = sprintf( "%s%s %s %s\n", mfu_out, mfu[cmd], mfu_timestamp[cmd], cmd)
-        }
-        new_mfu = sprintf("sort -gr > %s", FILENAME)
-        print mfu_out | new_mfu
-        close(new_mfu)
-
+    if (length($0) > 0 && $0 !~ "^ *$") {
+        sel = $0
         if (substr(sel, length(sel), 1) == "#") {
             sub("#$", "", sel)
             system(sprintf("%s -e \"%s\"", terminal, sel))
@@ -80,6 +45,34 @@ END {
             print sel | shell
             close(shell)
         }
+    } else {
+        exit 1
     }
+    next
 }
-' - ${list} &
+$2 <= ageOut {
+    next
+}
+$0 !~ /^ *$/ {
+    cmd=""
+    for (i=NF; i >= 3; i--) {
+        cmd=$i" "cmd
+    }
+    sub(" *$", "", cmd)
+    mfu[cmd] = $1
+    mfu_timestamp[cmd] = $2
+}
+END {
+    if (!(sel in mfu)) {
+        mfu[sel] = 1
+    } else {
+        mfu[sel]++
+    }
+    mfu_timestamp[sel] = strftime("%s")
+
+    for (cmd in mfu) {
+        mfu_out = sprintf("%s%s %s %s\n", mfu_out, mfu[cmd], mfu_timestamp[cmd], cmd)
+    }
+    print mfu_out | sprintf("sort -gr > %s", FILENAME)
+}
+' - ${mfu_file} &

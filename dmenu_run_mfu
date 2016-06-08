@@ -1,21 +1,19 @@
 #!/bin/sh
 
-threshold=1
-terminal="xterm"
 mfu_file="$HOME/.dmenu_run_mfu"
-[ ! -f ${mfu_file} ] && touch ${mfu_file}
+[ ! -f "${mfu_file}" ] && touch "${mfu_file}"
 
 while [ $# -gt 0 ]; do
     case $1 in
-    --threshold) shift; threshold=$1 ;;
-    --terminal) shift; terminal=$1 ;;
-    *) dmenu_args="${dmenu_args}$1 " ;;
+    --threshold) shift; threshold=$1  ;;
+    --terminal)  shift; terminal="$1" ;;
+    *) dmenu_args="${dmenu_args}$1 "  ;;
     esac
     shift
 done
 
 dmenu_path \
-| awk -v threshold=${threshold} '
+| awk -v threshold=${threshold:-1} '
     FILENAME == "-" && !($0 in mfu) {
         print
         next
@@ -31,7 +29,7 @@ dmenu_path \
     }
 ' ${mfu_file} - \
 | dmenu $dmenu_args \
-| awk -v shell=${SHELL:-"/bin/sh"} -v terminal=${terminal} '
+| awk -v shell=${SHELL:-"/bin/sh"} -v terminal=${terminal:-"xterm"} '
     BEGIN {
         ageOut = strftime("%s")-((86400 * 7) * 8) # 2 months
     }

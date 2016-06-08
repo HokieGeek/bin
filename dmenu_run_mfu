@@ -24,7 +24,7 @@ dmenu_path \
         $1 = ""
         $2 = ""
         gsub(/^[ \t]*|[ \t]*$/, "")
-        if (length($0)) {
+        if (length()) {
             mfu[$0]=0
             print
         }
@@ -39,7 +39,7 @@ dmenu_path \
         sel = $0
         if (/#$/) {
             sub(/#$/, "")
-            system(sprintf("%s -e \"%s\"&", terminal, $0))
+            system(sprintf("%s -e \"%s\"&", terminal))
         } else {
             print | shell
             close(shell)

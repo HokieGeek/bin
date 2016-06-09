@@ -1,10 +1,10 @@
 #!/bin/sh
 
-if [ $# -le 0 ]; then
-    cat /dev/stdin
+if [ $# -gt 0 ]; then
+    echo "$@" | $0
 else
-    echo "$@"
-fi | sed -e 's/ /\n/g' \
-    | while read a; do
-        which $a &>/dev/null && exec echo $a
-    done
+    sed -e 's/ /\n/g' \
+        | while read a; do
+            which $a &>/dev/null && exec echo $a
+        done
+fi

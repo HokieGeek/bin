@@ -1,9 +1,7 @@
 #!/bin/sh
 
 if [ $# -le 0 ]; then
-    while read i; do
-        echo ${i}
-    done
+    cat /dev/stdin
 else
     echo "$@"
 fi | sed -e 's/ /\n/g' \

@@ -23,7 +23,7 @@ dmenu_path \
         $2 = ""
         gsub(/^[ \t]*|[ \t]*$/, "")
         if (length()) {
-            mfu[$0]=0
+            mfu[$0]
             print
         }
     }

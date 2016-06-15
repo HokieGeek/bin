@@ -9,11 +9,13 @@ fi
 for x in `git diff ${rev}.. | egrep "(diff |-Subproject)" | awk '$1 ~ /diff/ { sub("b/", "", $NF); print $NF } $1 ~ /-Subproject/ { print $NF }' | sed '$!N;s/\n/:/'`; do
     p=`echo $x | cut -d: -f1`
     r=`echo $x | cut -d: -f2`
-    echo -e "\033[35mSubmodule: ${p}"
-    echo -e "\033[35mRevision: ${r}"
-    echo -en '\033[0m'
-    cd ${p}
-    git --no-pager log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(cyan)<%an>%Creset' ${r}..
-    cd ..
-    echo -e "\n"
+    if [ -d "${p}"]; then
+        echo -e "\033[35mSubmodule: ${p}"
+        echo -e "\033[35mRevision:  ${r}"
+        echo -en '\033[0m'
+        pushd ${p} 2>&1 >/dev/null
+        git --no-pager log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(cyan)<%an>%Creset' ${r}..
+        popd
+        echo -e "\n"
+    fi
 done | less -R

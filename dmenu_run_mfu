@@ -48,14 +48,13 @@ dmenu_path \
         next
     }
     NF > 2 {
-        cmd = ""
-        for (i = NF; i >= 3; i--) {
-            cmd=$i" "cmd
-        }
-        sub(/ *$/, "", cmd)
-
-        mfu[cmd] = $1
-        mfu_ts[cmd] = $2
+        ct = $1
+        ts = $2
+        $1 = ""
+        $2 = ""
+        gsub(/^[ \t]*|[ \t]*$/, "")
+        mfu[$0] = ct
+        mfu_ts[$0] = ts
     }
     END {
         if (length(sel)) {
@@ -64,8 +63,7 @@ dmenu_path \
         }
 
         for (cmd in mfu) {
-            mfu_out = sprintf("%s%s %s %s\n", mfu_out, mfu[cmd], mfu_ts[cmd], cmd)
+            printf("%s %s %s\n", mfu[cmd], mfu_ts[cmd], cmd) | sprintf("sort -gr > %s", FILENAME)
         }
-        print mfu_out | sprintf("sort -gr > %s", FILENAME)
     }
 ' - ${mfu_file} &

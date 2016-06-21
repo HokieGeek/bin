@@ -37,7 +37,7 @@ dmenu_path \
         sel = $0
         if (/#$/) {
             sub(/#$/, "")
-            system(sprintf("%s -e \"%s\"&", terminal))
+            system(sprintf("%s -e \"%s\"&", terminal, $0))
         } else {
             print | shell
             close(shell)

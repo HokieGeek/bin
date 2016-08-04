@@ -3,9 +3,7 @@
 git branch -a | awk '
 {
     sub(/ *remotes\/|^* /, "")
-    cmd = sprintf("git log -1 --pretty=format:\"%%Cgreen%%ci %%Cblue%%cr%%Creset\" %s", $1)
-    cmd |& getline ds
-    close(cmd)
+    sprintf("git log -1 --pretty=format:\"%%Cgreen%%ci %%Cblue%%cr%%Creset\" %s", $1) |& getline ds
     printf("%-63s %s\n", ds, $0)
 }
 ' | sort $1

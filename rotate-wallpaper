@@ -3,7 +3,7 @@
 if [ "$2" = "--cron" ]; then
     crontab <(
         crontab -l 2>/dev/null | grep -v "${0##*/}"
-        echo '*/'${3:-"30"}' * * * * DISPLAY=:0.0 '"$(cd ${0%/*}; pwd)/${0##*/}"' '$1 ' >/dev/null'
+        printf '*/%d * * * * DISPLAY=:0.0 %s %s >/dev/null\n' ${3:-"30"} "$(cd ${0%/*}; pwd)/${0##*/}" $1
         )
     crontab -l
 else

@@ -1,18 +1,12 @@
-#!/bin/sh
+#!/bin/bash
 
-me="$(cd `dirname $0`; pwd)/`basename $0`"
-dirs="$1"
-[ "$2" = "--cron" ] && {
-    cronjobs=/tmp/cronjobs.$$
-    crontab -l > $cronjobs
-    echo '*/30 * * * * DISPLAY=:0.0 '$me' '$dirs ' >/dev/null' >> $cronjobs
-    crontab < $cronjobs
+if [ "$2" = "--cron" ]; then
+    crontab <(
+        crontab -l 2>/dev/null | grep -v "${0##*/}"
+        echo '*/'${3:-"30"}' * * * * DISPLAY=:0.0 '"$(cd ${0%/*}; pwd)/${0##*/}"' '$1 ' >/dev/null'
+        )
     crontab -l
-    exit 0
-}
-last=/tmp/rotate-wallpaper.last
-[ ! -f $last ] && echo "-" > $last
-sel=`find $dirs -type f ! -wholename "$(cat $last)" -print | shuf -n1`
-echo $sel > $last
-feh --bg-fill $sel
-echo $sel
+else
+    last=/var/tmp/${0##*/}.last
+    feh --bg-fill $(find $1 -type f ! -wholename "$(cat $last 2>/dev/null)" -print | shuf -n1 | tee $last)
+fi

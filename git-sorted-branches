@@ -2,7 +2,7 @@
 
 git branch -a | awk '
 {
-    sub(/ *remotes\/|^ *\*? */, "")
+    sub(/ *remotes\/|^[ \*]*/, "")
     sprintf("git log -1 --pretty=format:\"%%Cgreen%%ci %%Cblue%%cr%%Creset\" %s", $1) |& getline ds
     printf("%-63s %s\n", ds, $0)
 }

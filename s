@@ -69,11 +69,11 @@ expression=""
 # Parse the arguments
 while (( $# > 0 )); do
     case $1 in
-    -f) searchType="FILES";;
-    -g) searchType="GREP";;
+    -f) doSearch="doFind" ;;
+    -g) doSearch="doGrep" ;;
     -i) caseInsensitive=true ;;
     -q) loadInVim=false ;;
-    *) expression="${expression} $1";;
+    *) expression="${expression} $1" ;;
     esac
     shift
 done
@@ -85,7 +85,4 @@ if [ -z "${expression}" ]; then
 fi
 
 ## Perform the search
-case ${searchType:-"GREP"} in
-GREP) doGrep ;;
-FILES) doFind ;;
-esac
+$(${doSearch:-"doGrep"})

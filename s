@@ -85,4 +85,4 @@ if [ -z "${expression}" ]; then
 fi
 
 ## Perform the search
-$(${doSearch:-"doGrep"})
+${doSearch:-"doGrep"}

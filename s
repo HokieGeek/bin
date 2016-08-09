@@ -21,7 +21,7 @@ doGrep() {
         else
             grepprg="git\\ grep"
         fi
-        grepprg="${grepprg}\\ -n\\ -E\\ --no-color"
+        grepprg="${grepprg}\\ --line-number\\ --extended-regexp\\ --no-color"
         grepformat="%f:%l:%m"
     elif $(which ag >/dev/null 2>&1); then
         grepprg="ag\\ --nogroup\\ --nocolor\\ --column"
@@ -30,11 +30,11 @@ doGrep() {
         grepprg="ack\\ --nogroup\\ --nocolor\\ --column"
         grepformat="%f:%l:%c:%m"
     else
-        grepprg="grep\\ -rnIHE"
+        grepprg="grep\\ --recursive\\ --line-number\\ --binary-files=without-match\\ --with-filename\\ --extended-regexp"
         grepformat="%f:%l:%m"
         glob="*"
     fi
-    ${caseInsensitive:-false} && opt_ci="-i"
+    ${caseInsensitive:-false} && opt_ci="--ignore-case"
 
     if ${loadInVim:-true}; then
         exec vim -c "set grepprg=${grepprg}" \

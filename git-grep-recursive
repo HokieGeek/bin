@@ -1,4 +1,5 @@
 #!/bin/sh
 
 git --no-pager grep $@
-git submodule foreach 'git --no-pager grep '$@' || true'
+git submodule --quiet foreach --recursive "git --no-pager grep $@ | awk '$1 ~ /Entering/ { next } { print }' "
+# git submodule --quiet foreach --recursive "git --no-pager grep $@ | awk '$1 ~ /Entering/ { next } { printf(\"%s/%s\n\", '$path', $0) }' "

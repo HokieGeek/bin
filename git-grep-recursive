@@ -1,0 +1,4 @@
+#!/bin/sh
+
+git --no-pager grep $@
+git submodule foreach 'git --no-pager grep '$@' || true'

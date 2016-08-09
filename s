@@ -16,7 +16,12 @@ USAGE_INFO
 
 doGrep() {
     if $(git rev-parse --is-inside-working-tree >/dev/null 2>&1); then
-        grepprg="git\\ grep\\ -n\\ -E\\ --no-color"
+        if $(which git-grep-recursive >/dev/null 2>&1); then
+            grepprg="git-grep-recursive"
+        else
+            grepprg="git\\ grep"
+        fi
+        grepprg="${grepprg}\\ -n\\ -E\\ --no-color"
         grepformat="%f:%l:%m"
     elif $(which ag >/dev/null 2>&1); then
         grepprg="ag\\ --nogroup\\ --nocolor\\ --column"
@@ -36,18 +41,18 @@ doGrep() {
                  -c "set grepformat=${grepformat}" \
                  -c "set foldlevel=99" \
                  -c "set cursorline" \
-                 -c "silent grep ${opt_ci:-""} \"${expression}\" ${glob:-""}" \
+                 -c "silent grep ${opt_ci} \"${expression[@]}\" ${glob}" \
                  -c "if empty(getqflist())|qa|else|if len(getqflist()) > 1|copen|endif|endif" \
                  -c "set nocursorline"
     else
-        $(echo ${grepprg} | sed 's/\\\\//g') ${opt_ci:-""} ${expression} ${glob:-""}
+        ${grepprg//\\/} ${opt_ci} ${expression[@]} ${glob}
     fi
 }
 
 doFind() {
     ${caseInsensitive:-false} && opt_ci="i"
     set -o noglob
-    findCmd="find . -${opt_ci:-""}name "*${expression}*" -print"
+    findCmd="find . -${opt_ci}name "*${expression[@]}*" -print"
     unset noglob
 
     if ${loadInVim:-true}; then
@@ -64,23 +69,21 @@ doFind() {
     fi
 }
 
-expression=""
-
 # Parse the arguments
+declare -a expression
 while (( $# > 0 )); do
     case $1 in
     -f) doSearch="doFind" ;;
     -g) doSearch="doGrep" ;;
     -i) caseInsensitive=true ;;
     -q) loadInVim=false ;;
-    *) expression="${expression} $1" ;;
+    *) expression+=("$1") ;;
     esac
     shift
 done
 
-expression=$(echo $expression | sed -e 's/^\s\*//g' -e 's/\s\*$//g') # Trim
-if [ -z "${expression}" ]; then
-    usage "No search expression provided"
+if (( ${#expression[*]} <= 0 )); then
+    usage "ERROR: No search expression provided"
     exit 1
 fi
 

@@ -1,5 +1,11 @@
 #!/bin/sh
 
+for arg in "$@"; do
+    [ "$arg" == "--color=never" -o "$arg" == "--no-color" ]  && useColor=false
+done
+
+# ${useColor:-true} && 
+
 cmd="git --no-pager grep $@"
 ${cmd} && \
 git submodule --quiet foreach --recursive "${cmd} | \

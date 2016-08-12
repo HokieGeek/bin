@@ -1,20 +1,32 @@
 #!/bin/sh
 
-url="https://www.archlinux.org/mirrorlist/?country=US&protocol=http&ip_version=4&use_mirror_status=on"
-tmplist=/tmp/list
+if [ "$1" = "--hook" ]; then
+    /etc/pacman.d/hooks/pacman-mirrorlist.hook << EOF
+[Trigger]
+Operation = Install
+Operation = Upgrade
+Type = Package
+Target = pacman-mirrorlist
+
+[Action]
+When = PostTransaction
+Exec = /usr/local/bin/update-mirrorlist
+EOF
+    exit 0
+fi
+
+## Backup the current list
 list=/etc/pacman.d/mirrorlist
+sudo cp ${list} ${list}.bak
 
-## Download the list ranked by status
-curl "${url}" -o ${tmplist}
-
-## Process it by uncommenting the top 10 mirrors (with the best score)
-sed -i -e '/##/d' -e '/^$/d' ${tmplist} # TODO: this might be overkill?
-sed -i '1,8s/^#//' ${tmplist}
+## Download the list ranked by status and
+## process it by uncommenting the top 10 mirrors (with the best score)
+tmplist=`mktemp`
+curl "https://www.archlinux.org/mirrorlist/?country=US&protocol=http&ip_version=4&use_mirror_status=on" | \
+    sed -e '/##/d' -e '/^$/d' | sed '1,12s/^#//' > ${tmplist}
 
 ## Rank the list by speed
-mv ${tmplist} ${tmplist}.status
-sudo /usr/bin/rankmirrors -n 8 ${tmplist}.status > ${tmplist}
+/usr/bin/rankmirrors -n 0 ${tmplist} > ${tmplist}.ranked
 
 ## Replace the current list with the new list
-sudo cp ${list} ${list}.bak
-sudo install -Dm644 ${tmplist} ${list}
+sudo install -Dm644 ${tmplist}.ranked ${list}

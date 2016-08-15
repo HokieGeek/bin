@@ -32,37 +32,3 @@ END {
     }
 }
 ' <(git branch -a)
-#!/bin/bash
-
-awk '
-{
-    sub(/ *remotes\/|^[ \*]*/, "")
-    sprintf("git log -1 --pretty=format:\"%%ct\" %s", $1) |& getline ds
-    branches[ds]=$1
-}
-END {
-    # for (b in branches) {
-    #     printf("(u) branches[%s] = %s\n", b, branches[b])
-    # }
-    asorti(branches, sorted)
-    # PROCINFO["sorted_in"] = "@ind_num_asc"
-    for (b in sorted) {
-        # printf("(s) branches[%s] = %s\n", sorted[b], branches[sorted[b]])
-        branch = branches[sorted[b]]
-        sprintf("git log -1 --pretty=format:\"%%Cgreen%%ci %%Cblue%%cr%%Creset\" %s", branch) |& getline ds
-        printf("%-63s %s\n[Q]uit, [D]elete or [Enter] to continue: ", ds, branch)
-        getline choice < "-"
-        if (choice ~ /[qQ]/) {
-            exit
-        } else if (choice ~ /[dD]/) {
-            split(branch, branch_split, "/")
-            if (branch_split[2] == "master") {
-                print "WARNING: Will not remove master. You need to do it by hand."
-            } else {
-                # printf("TODO: delete %s from %s\n", branch_split[2], branch_split[1])
-                printf("git branch -D %s; git push %s :%s", branch_split[2], branch_split[1], branch_split[2])
-            }
-        }
-    }
-}
-' <(git branch -a)

@@ -1,0 +1,10 @@
+#!/bin/bash
+
+[ "$1" = "--force" ] && force="--force"
+
+## Remove all processes which have exited
+docker rm ${force} $(docker ps --filter="status=exited" --quiet --no-trunc)
+
+## Remove all temporary and orphaned images
+docker rmi ${force} $(docker images --no-trunc | awk '$1 == "<none>" { print $3 }')
+docker rmi ${force} $(docker images --filter "dangling=true" --quiet --no-trunc)

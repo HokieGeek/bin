@@ -1,0 +1,3 @@
+#!/bin/sh
+
+docker run --tty --interactive --rm --volume ~/.hours:/root/.hours hokiegeek/hrs

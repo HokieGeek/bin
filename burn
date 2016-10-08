@@ -14,7 +14,7 @@ else
         dir=$1
     else
         dir=$(mktemp -d)
-        cp $@ ${dir}
+        cp -r $@ ${dir}
     fi
     echo "> Creating iso"
     iso=$(mktemp)

@@ -1,19 +1,31 @@
-#!/bin/sh
+#!/bin/bash
 
-if [ $# -lt 2 ]; then
+if (( $# < 2 )); then
     echo "ERROR: Not enough arguments" >&2
-    echo "USAGE `basename $0` <dvd|cd> DIR [LABEL]" >&2
+    echo "USAGE `basename $0` <dvd|cd> PAYLOAD..." >&2
 fi
 
-format=$1
-dir=$2
-[ $# -gt 2 ] && lbl=$3 || lbl=`basename $2`
+format=$1; shift
 
-mkisofs -V ${lbl} -J -r -o /tmp/${lbl}.iso ${dir} || exit 1
+if [[ $(file $1) =~ "ISO" ]]; then
+    iso=$1
+else
+    if [ $# -eq 1 -a -d "$1" ]; then
+        dir=$1
+    else
+        dir=$(mktemp -d)
+        cp $@ ${dir}
+    fi
+    echo "> Creating iso"
+    iso=$(mktemp)
+    mkisofs -V ${1} -J -r -o ${iso} ${dir} || exit 1
+fi
 
+echo "> Burning to disc"
+exit 42
 case ${format} in
-dvd) growisofs -dvd-compat -Z /dev/sr0=/tmp/${lbl}.iso ;;
-cd) cdrecord -v -sao dev=/dev/sr0 /tmp/${lbl}.iso ;;
+dvd) growisofs -dvd-compat -Z /dev/sr0=${iso} ;;
+cd)  cdrecord -v -sao dev=/dev/sr0 ${iso} ;;
 esac
 
 eject

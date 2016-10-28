@@ -27,7 +27,7 @@ elif [ $# -eq 2 ]; then
     done
 else
     case ${1} in
-        purple) fg_hex="#5f0087"; fg_xterm="55"; printf "($1) "; ;;
+        purple) fg_hex="#5f0087"; fg_xterm="56"; printf "($1) "; ;;
           blue) fg_hex="#000087"; fg_xterm="18"; printf "($1) "; ;;
           cyan) fg_hex="#00d7af"; fg_xterm="43"; printf "($1) "; ;;
          green) fg_hex="#005f00"; fg_xterm="22"; printf "($1) "; ;;
@@ -52,7 +52,7 @@ fi
 echo "${fg_hex}, colour${fg_xterm}"
 
 ## Update xmonad
-sed "/colorForeground\s*=/s/\".*\"/\"${fg_hex}\"/g" -i ~/.xmonad/xmonad.hs
+sed "/colorForeground\s*=/s/\".*\"/\"${fg_hex}\"/g" -i ~/.xmonad/xmonad.hs && \
 ~/.xmonad/restart
 
 ## Update tmux
@@ -60,5 +60,5 @@ sed \
     -e "/window-status-current-format/s/colour[0-9]*/colour${fg_xterm}/" \
     -e "/pane-active-border-fg/s/colour[0-9]*/colour${fg_xterm}/" \
     -e "/message-bg/s/colour[0-9]*/colour${fg_xterm}/" \
-    -i $(readlink ~/.tmux.conf)
+    -i $(readlink ~/.tmux.conf) && \
 tmux source-file ~/.tmux.conf >/dev/null 2>&1

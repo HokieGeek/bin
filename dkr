@@ -1,0 +1,5 @@
+#!/bin/sh
+
+img=$1; shift
+
+docker run -it --rm $img $@

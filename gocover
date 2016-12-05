@@ -1,6 +1,12 @@
 #!/bin/sh
 
-go test -covermode=count -coverprofile=/tmp/$$.coverout $@
-go tool cover -func=/tmp/$$.coverout
-go tool cover -html=/tmp/$$.coverout
-rm -rf /tmp/$$.coverout
+[ "$1" == "--html" ] && {
+    html=true
+    shift
+}
+
+tmp=$(mktemp)
+
+go test -covermode=count -coverprofile=${tmp} $@
+go tool cover -func=${tmp}
+${html:-false} && go tool cover -html=${tmp}

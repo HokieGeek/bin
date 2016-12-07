@@ -1,0 +1,11 @@
+#!/bin/bash
+
+dev=$1
+mnt=$2
+ft="ext4"
+
+mapped="secure" # TODO: $(basename $(mktemp -u))
+cryptsetup luksOpen ${dev} ${mapped}
+
+mount -t ${ft} /dev/mapper/${mapped} ${mnt}
+# TODO: store ${mnt} ${mapped} to a file somewhere

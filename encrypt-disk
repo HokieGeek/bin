@@ -1,0 +1,24 @@
+#!/bin/sh
+
+# TODO: check if root
+
+dev=$1
+
+dd if=/dev/urandom of=${dev} bs=4096
+
+# TODO
+sfdisk ${dev} << EOF
+label: dos
+${dev}: type=83
+EOF
+
+cryptsetup -c aes-xts-plain -y -s 512 luksFormat ${dev}
+
+mapped=$(basename $(mktemp -u))
+
+cryptsetup luksOpen ${dev} ${mapped}
+
+mkfs="mkfs.ext4"
+${mkfs} /dev/mapper/${mapped}
+
+cryptsetup luksClose /dev/mapper/${mapped}

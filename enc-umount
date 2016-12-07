@@ -1,0 +1,7 @@
+#!/bin/sh
+
+mnt=$1
+mapped="secure" ## TODO: read from a file: awk '$1 ~ /'${mnt}'/ { print $2 }' FILE
+
+umount ${mnt}
+cryptsetup luksClose ${mapped}

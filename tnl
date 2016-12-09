@@ -1,4 +1,6 @@
 #!/bin/sh
 
-[ $# -gt 1 ] && id="-i $2"
-ssh -D 1080 -f -C -q -N ${id} ${1}
+port=$1 ; shift
+# FORK: -f
+set -x
+ssh -D $port -C -q -N $@

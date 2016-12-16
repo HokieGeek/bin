@@ -1,6 +1,11 @@
 #!/bin/sh
 
+if [ $# -lt 2 ]; then
+    echo "USAGE: ${0##*/} PORT [SSH_OPTIONS] REMOTE" >&2
+    exit 1
+fi
+
 port=$1 ; shift
-# FORK: -f
+
 set -x
 ssh -D $port -C -q -N $@

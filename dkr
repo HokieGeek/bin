@@ -1,5 +1,14 @@
 #!/bin/sh
 
-img=$1; shift
+# USAGE: [b] [%]IMG
 
-docker run -it --rm $img $@
+[ "$1" == "b" ] && {
+    build=true
+    shift
+}
+
+img=${1/\%/hokiegeek\/}; shift
+
+${build:-false} \
+    && docker build $@ ${img} . \
+    || docker run -it --rm ${img} $@

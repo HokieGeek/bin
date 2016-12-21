@@ -1,0 +1,7 @@
+#!/bin/sh
+
+git status --porcelain | awk '$1 ~ /M/ { print $2 }' | \
+    while read f; do
+        p=${f##*/}
+        git diff ${f} > "${p/\./_}.patch"
+    done

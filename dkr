@@ -1,14 +1,15 @@
 #!/bin/sh
 
-# USAGE: [b] [%]IMG
+# USAGE: [b] [%]IMG [OPTS]
 
 [ "$1" == "b" ] && {
     build=true
     shift
 }
 
-img=${1/\%/hokiegeek\/}; shift
+img=${1:-"%${PWD##*/}"}; shift
+img=${img/\%/hokiegeek\/}
 
 ${build:-false} \
-    && docker build $@ ${img} . \
+    && docker build $@ --tag ${img} . \
     || docker run -it --rm ${img} $@

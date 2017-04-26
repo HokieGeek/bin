@@ -1,21 +1,28 @@
-#!/bin/sh
+#!/bin/bash
 
-if [ $# -gt 0 -a "$1" == "--help" ]; then
-    echo "USAGE: git sublog [--help] <revision>"
-    exit 1
-fi
-[ $# -gt 0 ] && rev="$1" || rev="HEAD~1"
+revs=()
+while (( $# > 0 )); do
+    case $1 in
+        --help) echo "USAGE: git sublog [--help] [START_REVISION] [END_REVISION]" >&2 ;;
+        *) revs+=($1) ;;
+    esac
+    shift
+done
 
-for x in `git diff ${rev}.. | awk '$1 ~ /^diff/ || $1 ~ /^-Subproject/ { sub("^b/", "", $NF); print $NF }' | sed '$!N;s/\n/:/'`; do
-    p=`echo ${x} | cut -d: -f1`
-    r=`echo ${x} | cut -d: -f2`
-    if [ -d "${p}" ]; then
-        echo -e "\033[35mSubmodule: ${p}"
-        echo -e "\033[35mRevision:  ${r}"
-        echo -en '\033[0m'
-        pushd ${p} 2>&1 >/dev/null
-        git --no-pager log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(cyan)<%an>%Creset' ${r}..
-        popd 2>&1 >/dev/null
-        echo -e "\n"
-    fi
-done | less -R
+git diff ${revs[0]:-"HEAD~1"}..${revs[1]:-"HEAD"} | \
+    awk '
+    $1 ~ /diff/ {
+        sub("b/", "", $NF)
+        submodule=$NF
+    }
+    $1 ~ /-Subproject/ { oldrev=$NF }
+    $1 ~ /+Subproject/ { printf("%s %s %s\n", submodule, oldrev, $NF) }
+    ' | while read submodule rev1 rev2; do
+            printf "\033[35mSubmodule: %s\nRevision:  %s..%s\n\033[0m" ${submodule} ${rev1} ${rev2}
+            git --no-pager --git-dir=${submodule}/.git \
+                log \
+                --graph \
+                --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(cyan)<%an>%Creset' \
+                ${rev1}..${rev2}
+            echo -e "\n"
+        done

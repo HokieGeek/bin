@@ -1,0 +1,68 @@
+#!/bin/bash
+
+usage() {
+    ## TODO
+    git tag --help
+} >&2
+
+askYN() {
+    read -p "$@? [yN]: " -N 1 answer
+    [[ -n "${answer}" ]] && echo ""
+    [[ ${answer} =~ [yY] ]] && return 0 || return 1
+}
+
+positional=()
+while (( $# > 0 )); do
+    case $1 in
+    --release) release_only=true ;;
+    -h|--help) usage; exit 0 ;;
+    -a|-s|-f|-d|-v|-l|--no-column|--create-reflog|--merged|--no-merged|--column*|--sort=*|--format=*|-n*)
+        gitTagOpts+=($1)
+        ;;
+    -m|-F|-u|--contains|--points-at)
+        gitTagOpts+=($1 $2)
+        ;;
+    *) positional+=($1) ;;
+    esac
+    shift
+done
+
+createAnnotatedTag() {
+    newTag=$1; shift
+    [[ -n "${newTag}" ]] && askYN "Create new tag '${newTag}'" && {
+        git tag -a ${newTag} $@ && git cat-file tag ${newTag}
+    }
+}
+
+delimeter="-"
+if (( ${#gitTagOpts[*]} > 0 )); then
+    exec git tag ${gitTagOpts[*]} ${positional[*]}
+else
+    latest=$(git describe | awk -F- '{ printf("%s%s%s\n", $1, FS, $2) }')
+    [[ -n "${latest}" ]] && {
+        release=${latest##*${delimeter}}
+        oldIFS=$IFS; IFS="."; read major minor patch <<<"${latest%${delimeter}*}"; IFS=$oldIFS; unset oldIFS
+        
+        ${release_only:-false} && {
+            (( release++ ))
+        } || {
+            ## TODO: keep asking if the user fucks up
+            read -p "What type of update is this? [major.minor.patch]: " updateType
+            (( ${#updateType} > 1 )) && updateType=${updateType,,}
+            case ${updateType} in
+            M|maj|major)
+                ;;
+            m|min|minor)
+                ;;
+            p|patch) (( patch++ )) ;;
+            *) break ;;
+            esac
+            release=1
+        }
+        
+        print -v newTag "%d.%d.%d-%d" ${major} ${minor} ${patch} ${release}
+    } || {
+        askYN "Could not find a previous tag. Build a new one?" && newTag="1.0.0-1"
+    }
+    createAnnotatedTag ${newTag} ${gitTagOpts[*]} ${positional[*]}
+fi

@@ -42,7 +42,7 @@ else
     [[ -n "${latest}" ]] && {
         release=${latest##*${delimeter}}
         oldIFS=$IFS; IFS="."; read major minor patch <<<"${latest%${delimeter}*}"; IFS=$oldIFS; unset oldIFS
-        
+
         ${release_only:-false} && {
             (( release++ ))
         } || {
@@ -59,7 +59,7 @@ else
             esac
             release=1
         }
-        
+
         print -v newTag "%d.%d.%d-%d" ${major} ${minor} ${patch} ${release}
     } || {
         askYN "Could not find a previous tag. Build a new one?" && newTag="1.0.0-1"

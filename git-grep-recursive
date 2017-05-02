@@ -2,5 +2,5 @@
 
 cmd="git --no-pager grep "$@
 ${cmd} && \
-git submodule --quiet foreach --recursive "${cmd} | \
-awk '{ printf(\"%s/%s\n\", \"'\$path'\", \$0) }' || :"
+git submodule --quiet foreach --recursive \
+    "${cmd} | awk '{ printf(\"%s/%s\n\", \"'\$path'\", \$0) }' || :"

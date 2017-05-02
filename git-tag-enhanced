@@ -3,7 +3,7 @@
 askYN() {
     read -p "$@ [yN]: " -N 1 answer
     [[ -n "${answer}" ]] && echo ""
-    [[ ${answer} =~ [yY] ]] && return 0 || return 1
+    [[ ${answer} =~ ^[yY] ]]
 }
 
 delimeter="-"
@@ -11,7 +11,7 @@ if [[ $# == 2 && $1 =~ -m|F ]] || (( $# == 0 )); then
     latest=$(git describe 2>/dev/null | awk -F- '{ printf("%s%s%s\n", $1, FS, $2) }')
     [[ -n "${latest}" ]] && {
         release=${latest##*${delimeter}}
-        oldIFS=$IFS; IFS="."; read major minor patch <<<"${latest%${delimeter}*}"; IFS=$oldIFS; unset oldIFS
+        oldIFS=$IFS; IFS="."; read major minor patch extra <<<"${latest%${delimeter}*}"; IFS=$oldIFS; unset oldIFS
 
         while
             waiting=false
@@ -46,7 +46,8 @@ if [[ $# == 2 && $1 =~ -m|F ]] || (( $# == 0 )); then
             :
         done
 
-        printf -v newTag "%d.%d.%d-%d" ${major} ${minor} ${patch} ${release}
+        printf -v newTag "%d." ${major} ${minor} ${patch} ${extra}
+        newTag=${newTag/%\./-${release}}
     } || {
         askYN "Could not find a previous tag. Build a new one?" \
             && newTag="1.0.0-1" \

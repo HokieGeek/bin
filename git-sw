@@ -21,7 +21,7 @@ fi
 git branch | grep $new_branch || { $0 master && git branch $new_branch }
 
 ## Determine the current branch and build a stash name
-curr_branch=`git branch | grep '^*' | sed 's/^\* //'`
+curr_branch=`git branch | sed '/^\*/!d; s///'`
 curr_stash_name=$curr_branch
 echo "CURR_BRANCH: $curr_branch"
 # curr_branches_count=`git stash list | grep -c "On ${curr_branch}:"`

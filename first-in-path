@@ -3,7 +3,7 @@
 if [ $# -gt 0 ]; then
     echo "$@" | $0
 else
-    sed -e 's/ /\n/g' \
+    sed 's/ /\n/g' \
         | while read a; do
             which $a &>/dev/null && exec echo $a
         done

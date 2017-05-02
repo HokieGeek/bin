@@ -46,8 +46,8 @@ if [[ $# == 2 && $1 =~ -m|F ]] || (( $# == 0 )); then
             :
         done
 
-        printf -v newTag "%d." ${major} ${minor} ${patch} ${extra}
-        newTag=${newTag/%\./-${release}}
+        printf -v newTag "%s." ${major} ${minor} ${patch} ${extra}
+        newTag=${newTag/%\./${delimeter}${release}}
     } || {
         askYN "Could not find a previous tag. Build a new one?" \
             && newTag="1.0.0-1" \
@@ -58,5 +58,5 @@ if [[ $# == 2 && $1 =~ -m|F ]] || (( $# == 0 )); then
         git tag -a ${newTag} $* && git cat-file tag ${newTag}
     }
 else
-    exec git tag $*
+    exec git tag $@
 fi

@@ -1,8 +1,8 @@
 #!/bin/sh
 
-[ $# -gt 0 ] && xterminal="$1" || xterminal=`get-terminal`
+xterminal="${1:-$(get-terminal)}"
 
-for s in $(tmux list-sessions | awk -F: '$NF !~ /attached/ { print $1 }'); do
-    ${xterminal} -e tmux attach-session -t $s &>/dev/null &
+tmux list-sessions | awk -F: '$NF !~ /attached/ { print $1 }' | while read s; do
+    ${xterminal} -e tmux attach-session -t ${s} &>/dev/null &
 done
 disown -a

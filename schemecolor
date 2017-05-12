@@ -2,14 +2,14 @@
 
 here=$(cd $(dirname $0); pwd)
 me=${here}/$(basename $0)
-[ $# -le 0 ] && {
+(( $# == 0 )) && {
     colors=$(${me} --colors | xargs | sed 's/\s/|/g')
     echo "USAGE: $(basename $0) [${colors}]"
     exit 1
 }
 
 if [[ "$1" =~ "--cycle" ]]; then
-    [ $# -gt 1 ] && delay=$2 || delay="30s"
+    delay=${2:-"30s"}
     ([ "$1" == "--cycle-all" ] && list-colors --porcelain || $me --colors) \
         | awk '{ sub("colour", ""); sub("#[0-9a-f]*", "\"&\""); print }' \
             | while read nums; do
@@ -17,8 +17,8 @@ if [[ "$1" =~ "--cycle" ]]; then
                 sleep ${delay}
             done
     exit
-elif [ $# -eq 2 ]; then
-    while [ $# -gt 0 ]; do
+elif (( $# == 2 )); then
+    while (( $# > 0 )); do
         case $1 in
             [0-9]*) fg_xterm="$1" ;;
             *) fg_hex="$1" ;;

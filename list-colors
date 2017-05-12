@@ -266,7 +266,6 @@ hex[254]='#e4e4e4';
 hex[255]='#eeeeee';
 
 for i in {0..255}; do
-    # printf "\x1b[38;5;${i}mcolour${i}\n"
     [ "$1" != "--porcelain" ] && printf "\x1b[38;5;${i}m"
     printf "colour${i} ${hex[${i}]}\n"
 done

@@ -1,18 +1,15 @@
 #!/bin/bash
 
 usage() {
-    {
-    (( $# > 0 )) && echo -e "$@\n"
+    (( $# > 0 )) && echo -e "$@"
     echo "USAGE: ${0##*/} [-g|-f] [-q] [-i] <EXPRESSION>"
     more << USAGE_INFO
-
        -g      [DEFAULT] Greps the contents of all of the files in the directory (recursive)
        -f      Searches for file and directory names (recursive)
        -i      Makes any search case-insensitive
        -q      Quits after performing search instead of starting vim
 USAGE_INFO
-    } >&2
-}
+} >&2
 
 doGrep() {
     if $(git rev-parse --is-inside-working-tree >/dev/null 2>&1); then

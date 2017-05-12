@@ -1,17 +1,18 @@
 #!/bin/bash
 
 declare -A keymap
-# keymap["monb-d"]="XF86_Calculator"
-keymap["monb-d"]="XF86_MonBrightnessDown"
-keymap["monb-u"]="XF86_MonBrightnessUp"
+# keymap["monb-d"]="-e XF86_Calculator"
+keymap["monb-d"]="-e XF86_MonBrightnessDown"
+keymap["monb-u"]="-e XF86_MonBrightnessUp"
 
-declare -a args
-while (( $# > 0 )); do
-    case $1 in
-        # L/R Shift, L/R Ctrl, L/R Alt, L/R Super
-        -[sScCaAuU]) args=+("$1") ;;
-        [^-]*) args=+("-e $([ "${keymap[$1]+isset}" ] && echo ${keymap[$1]} || echo $1)") ;;
-    esac
-    shift
-done
-exec xkev ${args[@]}
+(( $# == 0 )) && {
+    echo "USAGE: ${0##*/} [-sS] [-cC] [-aA] [-uU] [keysym_shorthand]"
+    man xkev | sed '17,36!d;/^$/d;/_Meta_/d'
+
+    for key in ${!keymap[@]}; do
+        printf "\t%s     %s\n" $key ${keymap[$key]/-e /}
+    done
+    exit 1
+} >&2
+
+exec xkev $(for arg in $@; do echo "${keymap[${arg}]:-${arg}}"; done)

@@ -1,11 +1,8 @@
-#!/bin/sh
+#!/bin/bash
 
-if [ $# -lt 2 ]; then
-    echo "USAGE: ${0##*/} PORT [SSH_OPTIONS] REMOTE" >&2
+(( $# < 2 )) && {
+    echo "USAGE: ${0##*/} PORT [SSH_OPTIONS] REMOTE"
     exit 1
-fi
+} >&2
 
-port=$1 ; shift
-
-set -x
-ssh -D $port -C -q -N $@
+ssh -D $1 -C -q -N ${@:2}

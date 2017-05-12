@@ -1,6 +1,6 @@
 #!/bin/bash
 
-[ "$1" = "--force" ] && force="--force"
+[[ "$1" == "--force" ]] && force="$1"
 
 ## Remove all processes which have exited
 docker rm ${force} $(docker ps --filter="status=exited" --quiet --no-trunc)

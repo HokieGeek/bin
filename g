@@ -2,9 +2,8 @@
 
 usage() {
     (( $# > 0 )) && echo -e "$@"
-    echo "USAGE: ${0##*/} [-g|-f] [-q] [-i] <EXPRESSION>"
+    echo "USAGE: ${0##*/} [-f] [-q] [-i] <EXPRESSION>"
     more << USAGE_INFO
-       -g      [DEFAULT] Greps the contents of all of the files in the directory (recursive)
        -f      Searches for file and directory names (recursive)
        -i      Makes any search case-insensitive
        -q      Quits after performing search instead of starting vim
@@ -59,7 +58,6 @@ doFind() { # $1 = case_insensitive, $2 = loadInVim, $@ = expression
 while (( $# > 0 )); do
     case $1 in
     -f) doSearch="doFind" ;;
-    -g) doSearch="doGrep" ;;
     -i) caseInsensitive=true ;;
     -q) loadInVim=false ;;
     *) expression+=("$1") ;;

@@ -55,11 +55,11 @@ doFind() { # $1 = case_insensitive, $2 = loadInVim, $@ = expression
 }
 
 # Parse the arguments
-while (( $# > 0 )); do
-    case $1 in
-    -f) doSearch="doFind" ;;
-    -i) caseInsensitive=true ;;
-    -q) loadInVim=false ;;
+while getopts "fiq" opt; do
+    case $opt in
+    f) doSearch="doFind" ;;
+    i) caseInsensitive=true ;;
+    q) loadInVim=false ;;
     *) expression+=("$1") ;;
     esac
     shift

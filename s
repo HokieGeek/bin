@@ -12,6 +12,9 @@ USAGE_INFO
 } >&2
 
 doGrep() { # $1 = case_insensitive, $2 = loadInVim, $@ = expression
+    $1 && args+=("--ignore-case")
+    args+=(\"${*:3}\")
+
     if $(git rev-parse --is-inside-working-tree >/dev/null 2>&1); then
         grepprg="git\\ grep\\ --recurse-submodules\\ --line-number\\ --extended-regexp\\ --no-color"
         grepformat="%f:%l:%m"
@@ -25,19 +28,23 @@ doGrep() { # $1 = case_insensitive, $2 = loadInVim, $@ = expression
         grepprg="grep\\ --recursive\\ --line-number\\ --binary-files=without-match\\ --with-filename\\ --extended-regexp"
         grepformat="%f:%l:%m"
         glob="*"
+        args+=('*')
     fi
-    $1 && opt_ci="--ignore-case"
 
     if $2; then
         exec vim -c "set grepprg=${grepprg}" \
                  -c "set grepformat=${grepformat}" \
                  -c "set foldlevel=99" \
                  -c "set cursorline" \
-                 -c "silent grep ${opt_ci} \"${@:3}\" ${glob}" \
+                 -c "silent grep ${args[*]}" \
                  -c "if empty(getqflist())|qa|else|if len(getqflist()) > 1|copen|endif|endif" \
                  -c "set nocursorline"
+                 # -c "silent grep ${opt_ci} \"${@:3}\" ${glob}" \
     else
-        ${grepprg//\\/} ${opt_ci} ${@:3} ${glob}
+        $1 && opt_ci="--ignore-case"
+        set -x
+        ${grepprg//\\/} ${opt_ci} "${*:3}" ${glob}
+        # ${grepprg//\\/} ${args[*]}
     fi
 }
 

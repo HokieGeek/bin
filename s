@@ -11,14 +11,9 @@ usage() {
 USAGE_INFO
 } >&2
 
-doGrep() {
+doGrep() { # $1 = case_insensitive, $2 = loadInVim, $@ = expression
     if $(git rev-parse --is-inside-working-tree >/dev/null 2>&1); then
-        if $(which git-grep-recursive >/dev/null 2>&1); then
-            grepprg="git-grep-recursive"
-        else
-            grepprg="git\\ grep"
-        fi
-        grepprg="${grepprg}\\ --line-number\\ --extended-regexp\\ --no-color"
+        grepprg="git\\ grep\\ --recurse-submodules --line-number\\ --extended-regexp\\ --no-color"
         grepformat="%f:%l:%m"
     elif $(which ag >/dev/null 2>&1); then
         grepprg="ag\\ --nogroup\\ --nocolor\\ --column"
@@ -31,43 +26,34 @@ doGrep() {
         grepformat="%f:%l:%m"
         glob="*"
     fi
-    ${caseInsensitive:-false} && opt_ci="--ignore-case"
+    $1 && opt_ci="--ignore-case"
 
-    if ${loadInVim:-true}; then
+    if $2; then
         exec vim -c "set grepprg=${grepprg}" \
                  -c "set grepformat=${grepformat}" \
                  -c "set foldlevel=99" \
                  -c "set cursorline" \
-                 -c "silent grep ${opt_ci} \"${expression[@]}\" ${glob}" \
+                 -c "silent grep ${opt_ci} \"${@:3}\" ${glob}" \
                  -c "if empty(getqflist())|qa|else|if len(getqflist()) > 1|copen|endif|endif" \
                  -c "set nocursorline"
     else
-        ${grepprg//\\/} ${opt_ci} ${expression[@]} ${glob}
+        ${grepprg//\\/} ${opt_ci} ${@:3} ${glob}
     fi
 }
 
-doFind() {
-    ${caseInsensitive:-false} && opt_ci="i"
-    set -o noglob
-    findCmd="find . -${opt_ci}name "*${expression[@]}*" -print"
-    unset noglob
-
-    if ${loadInVim:-true}; then
-        results=$(mktemp)
-        ${findCmd} | xargs file | sed 's/:/:1:/' > ${results}
-        if [ -f "${results}" -a $(cat ${results} | wc -l) -gt 0 ]; then
-            exec vim -c "cfile ${results}" \
-                     -c "set errorformat=%f:%l:%m" \
-                     -c "if empty(getqflist())|qa|else|if len(getqflist()) > 1|cwindow|endif|endif" \
-                     -c "call delete('${results}')"
-        fi
+doFind() { # $1 = case_insensitive, $2 = loadInVim, $@ = expression
+    findCmd='find . -'$($1 && echo "i")'name *'${@:3}'* -print'
+    if $2; then
+        exec vim -q $(t=$(mktemp); ${findCmd} | xargs file | sed 's/:/:1:/' > $t; echo $t) \
+                 -c "set errorformat=%f:%l:%m" \
+                 -c "call delete(&errorfile)" \
+                 -c "if empty(getqflist())|qa|else|if len(getqflist()) > 1|cwindow|endif|endif"
     else
-        ${findCmd}
+        exec ${findCmd}
     fi
 }
 
 # Parse the arguments
-declare -a expression
 while (( $# > 0 )); do
     case $1 in
     -f) doSearch="doFind" ;;
@@ -78,11 +64,10 @@ while (( $# > 0 )); do
     esac
     shift
 done
-
-if (( ${#expression[*]} <= 0 )); then
+(( ${#expression[@]} == 0 )) && {
     usage "ERROR: No search expression provided"
     exit 1
-fi
+}
 
 ## Perform the search
-${doSearch:-"doGrep"}
+${doSearch:-"doGrep"} ${caseInsensitive:-false} ${loadInVim:-true} ${expression[*]}

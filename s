@@ -13,7 +13,7 @@ USAGE_INFO
 
 doGrep() { # $1 = case_insensitive, $2 = loadInVim, $@ = expression
     if $(git rev-parse --is-inside-working-tree >/dev/null 2>&1); then
-        grepprg="git\\ grep\\ --recurse-submodules --line-number\\ --extended-regexp\\ --no-color"
+        grepprg="git\\ grep\\ --recurse-submodules\\ --line-number\\ --extended-regexp\\ --no-color"
         grepformat="%f:%l:%m"
     elif $(which ag >/dev/null 2>&1); then
         grepprg="ag\\ --nogroup\\ --nocolor\\ --column"

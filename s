@@ -27,7 +27,6 @@ doGrep() { # $1 = case_insensitive, $2 = loadInVim, $@ = expression
     else
         grepprg="grep\\ --recursive\\ --line-number\\ --binary-files=without-match\\ --with-filename\\ --extended-regexp"
         grepformat="%f:%l:%m"
-        glob="*"
         args+=('*')
     fi
 
@@ -39,12 +38,8 @@ doGrep() { # $1 = case_insensitive, $2 = loadInVim, $@ = expression
                  -c "silent grep ${args[*]}" \
                  -c "if empty(getqflist())|qa|else|if len(getqflist()) > 1|copen|endif|endif" \
                  -c "set nocursorline"
-                 # -c "silent grep ${opt_ci} \"${@:3}\" ${glob}" \
     else
-        $1 && opt_ci="--ignore-case"
-        set -x
-        ${grepprg//\\/} ${opt_ci} "${*:3}" ${glob}
-        # ${grepprg//\\/} ${args[*]}
+        eval ${grepprg//\\/} ${args[*]}
     fi
 }
 

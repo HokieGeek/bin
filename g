@@ -33,10 +33,8 @@ doGrep() { # $1 = case_insensitive, $2 = loadInVim, $@ = expression
         exec vim -c "set grepprg=${grepprg}" \
                  -c "set grepformat=${grepformat}" \
                  -c "set foldlevel=99" \
-                 -c "set cursorline" \
                  -c "silent grep ${args[*]}" \
-                 -c "if empty(getqflist())|qa|else|if len(getqflist()) > 1|copen|endif|endif" \
-                 -c "set nocursorline"
+                 -c "if empty(getqflist())|qa|else|if len(getqflist()) > 1|copen|endif|endif"
     else
         eval ${grepprg//\\/} ${args[*]}
     fi

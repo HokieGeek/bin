@@ -55,19 +55,20 @@ doFind() { # $1 = case_insensitive, $2 = loadInVim, $@ = expression
 }
 
 # Parse the arguments
-while getopts "fiq" opt; do
+while getopts fiq opt; do
     case $opt in
     f) doSearch="doFind" ;;
     i) caseInsensitive=true ;;
     q) loadInVim=false ;;
-    *) expression+=("$1") ;;
+    \?) usage "ERROR: Invalid argument: -$OPTARG" ;;
     esac
-    shift
 done
-(( ${#expression[@]} == 0 )) && {
+shift $((OPTIND-1))
+
+(( $# == 0 )) && {
     usage "ERROR: No search expression provided"
     exit 1
 }
 
-## Perform the search
-${doSearch:-"doGrep"} ${caseInsensitive:-false} ${loadInVim:-true} ${expression[*]}
+# Perform the search
+${doSearch:-"doGrep"} ${caseInsensitive:-false} ${loadInVim:-true} $*

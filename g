@@ -7,8 +7,7 @@ usage() {
     echo "   -i      Makes any search case-insensitive"
     echo "   -q      Quits after performing search instead of starting vim"
 } >&2
-   
-# Parse the arguments
+
 while getopts :fiq opt; do
     case $opt in
     f) doFind=true ;;
@@ -24,7 +23,6 @@ if (( $# == 0 )); then
     exit 2
 fi
 
-# Perform the search
 if ${doFind:-false}; then
     findCmd="find . -${caseInsensitive:+'i'}name *${*}*"
     if ${quick:-false}; then
@@ -44,7 +42,7 @@ else
         grepprg="grep\\ --recursive\\ --line-number\\ --extended-regexp\\ --binary-files=without-match\\ --with-filename"
         set -- \"$@\" '*'
     fi
-    ${caseInsensitive} && grepprg="${grepprg}\\ --ignore-case"
+    ${caseInsensitive:-false} && grepprg+="\\ --ignore-case"
 
     if ${quick:-false}; then
         eval ${grepprg//\\/} "$*"

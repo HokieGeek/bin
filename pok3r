@@ -17,32 +17,36 @@ keymap["monb-u"]="XF86_MonBrightnessUp"
 
 declare -a tools=("xdotool" "xkev")
 for t in ${tools}; do
-    if which ${t} &>/dev/null; then
+    if command -v ${t} &>/dev/null; then
         tool="${t}"
         break
     fi
 done
 
-args=""
+args=()
+if [ ${tool} == ${tools[0]} ]; then # xdotool
 while [ $# -gt 0 ]; do
     case $1 in
         # L/R Shift, L/R Ctrl, L/R Alt, L/R Super
-        -[sScCaAuU])
-            if [ ${tool} == ${tools[0]} ]; then # xdotool
-                args="${args}$xdotool_mod[$1]+"
-            elif [ ${tool} == ${tools[1]} ]; then # xkev
-                args="${args} $1"
-            fi
-            ;;
+        -[sScCaAuU]) args+=("$xdotool_mod[$1]+") ;;
         [^-]*)
             key=$("${keymap[$1]+isset}" ] && echo ${keymap[$1]} || echo $1)
-            if [ ${tool} == ${tools[0]} ]; then # xdotool
-                args="${args}${key} "
-            elif [ ${tool} == ${tools[1]} ]; then # xkev
-                args="${args} -e ${key}"
-            fi
+            args+=("${key} ")
             ;;
     esac
     shift
 done
-echo "exec ${tool} ${args}"
+else #xkev
+while [ $# -gt 0 ]; do
+    case $1 in
+        # L/R Shift, L/R Ctrl, L/R Alt, L/R Super
+        -[sScCaAuU]) args+=($1) ;;
+        [^-]*)
+            key=$("${keymap[$1]+isset}" ] && echo ${keymap[$1]} || echo $1)
+            args+="-e ${key}")
+            ;;
+    esac
+    shift
+done
+fi
+echo "exec ${tool} ${args[@]}"

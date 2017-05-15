@@ -3,59 +3,56 @@
 usage() {
     (( $# > 0 )) && echo -e "$@"
     echo "USAGE: ${0##*/} [-f] [-q] [-i] <EXPRESSION>"
-    more << USAGE_INFO
-       -f      Searches for file and directory names (recursive)
-       -i      Makes any search case-insensitive
-       -q      Quits after performing search instead of starting vim
-USAGE_INFO
+    echo "   -f      Recursively searches for file and directory names instead of the contents"
+    echo "   -i      Makes any search case-insensitive"
+    echo "   -q      Quits after performing search instead of starting vim"
 } >&2
-
+   
 # Parse the arguments
-while getopts fiq opt; do
+while getopts :fiq opt; do
     case $opt in
     f) doFind=true ;;
     i) caseInsensitive=true ;;
-    q) loadInVim=false ;;
-    \?) usage "ERROR: Invalid argument: -$OPTARG" ;;
+    q) quick=true ;;
+    \?) usage "ERROR: Invalid argument: -$OPTARG"; exit 1 ;;
     esac
 done
 shift $((OPTIND-1))
 
-(( $# == 0 )) && {
+if (( $# == 0 )); then
     usage "ERROR: No search expression provided"
-    exit 1
-}
+    exit 2
+fi
 
 # Perform the search
 if ${doFind:-false}; then
-    findCmd='find . -'$(${caseInsensitive} && echo "i")'name *'$*'* -print'
-    if ${loadInVim}; then
-        vim -q <(${findCmd} | xargs file | sed 's/:/:1:/') \
-            -c "if empty(getqflist())|qa|else|if len(getqflist()) > 1|cwindow|endif|endif"
-    else
+    findCmd="find . -${caseInsensitive:+'i'}name *${*}*"
+    if ${quick:-false}; then
         ${findCmd}
+    else
+        vim --cmd "set errorformat=%f:%m" \
+            -q <(${findCmd} -printf "%p:%TY-%Tm-%Td %TH%TM %kKb %u:%g %m\n") \
+            -c "if empty(getqflist())|qa|else|if len(getqflist()) > 1|copen|set nolist|endif|endif"
     fi
 else
-    ${caseInsensitive} && args+=("--ignore-case")
-    args+=(\"$*\")
-
-    if $(git rev-parse --is-inside-working-tree >/dev/null 2>&1); then
+    if git rev-parse --is-inside-working-tree >/dev/null 2>&1; then
         grepprg="git\\ grep\\ --recurse-submodules\\ --line-number\\ --extended-regexp\\ --no-color"
     elif agAck=($(command -v ag ack 2>/dev/null)); then
-        grepprg="${agAck[0]##*/}\\ --nogroup\\ --nocolor\\ --column"
+        grepprg="${agAck[0]}\\ --nogroup\\ --nocolor\\ --column"
         grepformat="%f:%l:%c:%m"
     else
-        grepprg="grep\\ --recursive\\ --line-number\\ --binary-files=without-match\\ --with-filename\\ --extended-regexp"
-        args+=('*')
+        grepprg="grep\\ --recursive\\ --line-number\\ --extended-regexp\\ --binary-files=without-match\\ --with-filename"
+        set -- \"$@\" '*'
     fi
+    ${caseInsensitive} && grepprg="${grepprg}\\ --ignore-case"
 
-    if ${loadInVim}; then
-        vim -c "set grepprg=${grepprg}" \
-            -c "set grepformat=${grepformat:-"%f:%l:%m"}" \
-            -c "set foldlevel=99" \
-            -c "silent grep ${args[*]}" \
-            -c "if empty(getqflist())|qa|else|if len(getqflist()) > 1|copen|endif|endif"
+    if ${quick:-false}; then
+        eval ${grepprg//\\/} "$*"
     else
-        eval ${grepprg//\\/} ${args[*]}
+        vim -c "set foldlevel=99" \
+            -c "set grepprg=${grepprg}" \
+            -c "set grepformat=${grepformat:-"%f:%l:%m"}" \
+            -c "silent grep $*" \
+            -c "if empty(getqflist())|qa|else|if len(getqflist()) > 1|copen|endif|endif"
     fi
 fi

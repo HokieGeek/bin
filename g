@@ -16,22 +16,17 @@ doGrep() { # $1 = case_insensitive, $2 = loadInVim, $@ = expression
 
     if $(git rev-parse --is-inside-working-tree >/dev/null 2>&1); then
         grepprg="git\\ grep\\ --recurse-submodules\\ --line-number\\ --extended-regexp\\ --no-color"
-        grepformat="%f:%l:%m"
-    elif $(which ag >/dev/null 2>&1); then
-        grepprg="ag\\ --nogroup\\ --nocolor\\ --column"
-        grepformat="%f:%l:%c:%m"
-    elif $(which ack >/dev/null 2>&1); then
-        grepprg="ack\\ --nogroup\\ --nocolor\\ --column"
+    elif agAck=($(command -v ag ack 2>/dev/null)); then
+        grepprg="${agAck[0]##*/}\\ --nogroup\\ --nocolor\\ --column"
         grepformat="%f:%l:%c:%m"
     else
         grepprg="grep\\ --recursive\\ --line-number\\ --binary-files=without-match\\ --with-filename\\ --extended-regexp"
-        grepformat="%f:%l:%m"
         args+=('*')
     fi
 
     if $2; then
         exec vim -c "set grepprg=${grepprg}" \
-                 -c "set grepformat=${grepformat}" \
+                 -c "set grepformat=${grepformat:-"%f:%l:%m"}" \
                  -c "set foldlevel=99" \
                  -c "silent grep ${args[*]}" \
                  -c "if empty(getqflist())|qa|else|if len(getqflist()) > 1|copen|endif|endif"

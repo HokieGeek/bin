@@ -18,13 +18,10 @@ while getopts :fiq opt; do
 done
 shift $((OPTIND-1))
 
-if (( $# == 0 )); then
-    usage "ERROR: No search expression provided"
-    exit 2
-fi
+: ${@?$(usage "ERROR: No search expression provided")}
 
 if ${doFind:-false}; then
-    findCmd="find . -${caseInsensitive:+'i'}name *${*}*"
+    findCmd="find . -${caseInsensitive:+i}name *${*}*"
     if ${quick:-false}; then
         ${findCmd}
     else

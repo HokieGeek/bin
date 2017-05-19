@@ -1,5 +1,5 @@
 #!/bin/bash
 xdotool key super+ctrl+t
-st -g 6x1-0-0 -e ${1:-"hrs"} w &
+st -g 6x1-0-0 -e watch -t "${1:-"hrs"} list | awk '/ONGOING/ { print \$2 }'" &
 sleep 0.25s
 xdotool key super+ctrl+t

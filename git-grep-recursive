@@ -1,5 +1,0 @@
-#!/bin/sh
-
-cmd="git --no-pager grep $@"
-${cmd}
-git submodule --quiet foreach --recursive "${cmd} | sed 's:^:'\$path'/:' || :"

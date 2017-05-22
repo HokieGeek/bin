@@ -1,6 +1,6 @@
 #!/bin/sh
 
-mfu_file="$HOME/.dmenu_run_mfu"
+mfu_file="$HOME/.dmenu_run_mfu_test"
 [ ! -f "${mfu_file}" ] && touch "${mfu_file}"
 
 while [ $# -gt 0 ]; do
@@ -18,9 +18,8 @@ dmenu_path \
         print
         next
     }
-    $1 > threshold {
-        $1 = $2 = ""
-        gsub(/^[[:space:]]*|[[:space:]]*$/, "")
+    NF > 2 && $NF > threshold {
+        NF -= 2
         if ($0) {
             mfu[$0]
             print
@@ -37,7 +36,8 @@ dmenu_path \
         if (/#$/) {
             system(sprintf("%s -e \"%s\"&", terminal, gensub(/#$/, "", "g")))
         } else {
-            print | shell
+            print
+            # print | shell
             close(shell)
         }
         next
@@ -46,10 +46,9 @@ dmenu_path \
         next
     }
     NF > 2 {
-        ct = $1
-        ts = $2
-        $1 = $2 = ""
-        gsub(/^[[:space:]]*|[[:space:]]*$/, "")
+        ct = $NF
+        ts = $(NF-1)
+        NF -= 2
         mfu[$0] = ct
         mfu_ts[$0] = ts
     }
@@ -60,7 +59,7 @@ dmenu_path \
         }
 
         for (cmd in mfu) {
-            printf("%s %s %s\n", mfu[cmd], mfu_ts[cmd], cmd) | sprintf("sort -gr > %s", FILENAME)
+            printf("%d %s %d %d\n", mfu[cmd], cmd, mfu_ts[cmd], mfu[cmd]) | sprintf("sort -gr | cut -d\" \" -f2- > %s", FILENAME)
         }
     }
 ' - ${mfu_file} &

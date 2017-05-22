@@ -1,2 +1,0 @@
-#!/bin/sh
-for n in `seq 1 254`; do testip="192.168.1.${n}"; ping -c 2 -q ${testip} >/dev/null 2>&1 && echo ${testip}; done

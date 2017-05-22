@@ -19,10 +19,9 @@ dmenu_path \
         next
     }
     $1 > threshold {
-        $1 = ""
-        $2 = ""
-        gsub(/^[ \t]*|[ \t]*$/, "")
-        if (length()) {
+        $1 = $2 = ""
+        gsub(/^[[:space:]]*|[[:space:]]*$/, "")
+        if ($0) {
             mfu[$0]
             print
         }
@@ -36,8 +35,7 @@ dmenu_path \
     FILENAME == "-" && NF > 0 {
         sel = $0
         if (/#$/) {
-            sub(/#$/, "")
-            system(sprintf("%s -e \"%s\"&", terminal, $0))
+            system(sprintf("%s -e \"%s\"&", terminal, gensub(/#$/, "", "g")))
         } else {
             print | shell
             close(shell)
@@ -50,14 +48,13 @@ dmenu_path \
     NF > 2 {
         ct = $1
         ts = $2
-        $1 = ""
-        $2 = ""
-        gsub(/^[ \t]*|[ \t]*$/, "")
+        $1 = $2 = ""
+        gsub(/^[[:space:]]*|[[:space:]]*$/, "")
         mfu[$0] = ct
         mfu_ts[$0] = ts
     }
     END {
-        if (length(sel)) {
+        if (sel) {
             mfu[sel]++
             mfu_ts[sel] = strftime("%s")
         }

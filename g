@@ -3,9 +3,9 @@
 usage() {
     (( $# > 0 )) && echo -e "$@"
     echo "USAGE: ${0##*/} [-f] [-q] [-i] <EXPRESSION>"
-    echo "   -f      Recursively searches for file and directory names instead of the contents"
-    echo "   -i      Makes any search case-insensitive"
-    echo "   -q      Quits after performing search instead of starting vim"
+    echo "      -f      Recursively searches for file and directory names instead of the contents"
+    echo "      -i      Makes any search case-insensitive"
+    echo "      -q      Quits after performing search instead of starting vim"
 } >&2
 
 while getopts :fiq opt; do

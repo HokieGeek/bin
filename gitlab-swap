@@ -1,0 +1,11 @@
+#!/bin/bash
+
+githuburl=$(git config --get remote.origin.url)
+
+git remote rm origin
+
+git remote add --mirror=push github ${githuburl}
+
+git remote add origin ${githuburl/github/gitlab}
+
+git remote -v

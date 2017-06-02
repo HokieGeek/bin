@@ -1,0 +1,2 @@
+#!/bin/sh
+docker run --volume=$HOME/.hours:/root/.hours registry.gitlab.com/hokiegeek/hrs:master

@@ -30,7 +30,7 @@ if ${doFind:-false}; then
             -c "if empty(getqflist())|qa|else|if len(getqflist()) > 1|copen|set nolist|endif|endif"
     fi
 else
-    if git rev-parse --is-inside-working-tree >/dev/null 2>&1; then
+    if [[ $(git rev-parse --is-inside-work-tree >/dev/null 2>&1) == "false" ]]; then
         command -v git-grep-recursive >/dev/null 2>&1 \
             && grepprg="git-grep-recursive" \
             || grepprg="git\\ grep\\ --recurse-submodules"

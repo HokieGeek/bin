@@ -1,8 +1,8 @@
 #!/bin/bash
 
 for n in ${@-`cat /dev/stdin`}; do
-    tmux ${cmd:-"new"}-window ${cmd+-d -v} -P -F "Opening: ${n}" "ssh -tY ${n}"
-    : ${cmd:="split"}
+    tmux ${cmd-new}-window ${cmd+-d -v} -P -F "Opening: ${n}" "ssh -tYq ${n}"
+    : ${cmd:=split}
     tmux select-layout tiled >/dev/null
 done
 

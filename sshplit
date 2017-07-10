@@ -1,14 +1,9 @@
 #!/bin/bash
 
-tmux new-window
-for n in "$@"; do
-    echo "Opening: $n"
-    tmux split-window -v
-    tmux select-layout even-horizontal >/dev/null
-    tmux send-keys 'exec ssh -tY '${n} C-m
+for n in ${@-`cat /dev/stdin`}; do
+    tmux ${cmd:-"new"}-window ${cmd+-d -v} -P -F "Opening: ${n}" "ssh -tY ${n}"
+    : ${cmd:="split"}
+    tmux select-layout tiled >/dev/null
 done
 
-tmux kill-pane -t .0
-tmux select-pane -t .0
-tmux select-layout tiled >/dev/null
 tmux set-window-option synchronize-panes on >/dev/null

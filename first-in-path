@@ -1,10 +1,5 @@
 #!/bin/sh
 
-if [ $# -gt 0 ]; then
-    echo "$@" | $0
-else
-    sed 's/ /\n/g' \
-        | while read a; do
-            which $a &>/dev/null && exec echo $a
-        done
-fi
+for a in ${@-`cat /dev/stdin`}; do
+    command -v $a >/dev/null 2>&1 && exec echo $a
+done

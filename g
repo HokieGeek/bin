@@ -31,8 +31,8 @@ if ${doFind:-false}; then
     fi
 else
     if [[ $(git rev-parse --is-inside-work-tree >/dev/null 2>&1) == "false" ]]; then
-        command -v git-grep-recursive >/dev/null 2>&1 \
-            && grepprg="git-grep-recursive" \
+        command -v git-grep-submodules >/dev/null 2>&1 \
+            && grepprg="git-grep-submodules" \
             || grepprg="git\\ grep\\ --recurse-submodules"
         grepprg+="\\ --line-number\\ --extended-regexp\\ --no-color"
     elif agAck=($(command -v ag ack 2>/dev/null)); then

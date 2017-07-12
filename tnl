@@ -1,8 +1,5 @@
 #!/bin/bash
 
-(( $# < 2 )) && {
-    echo "USAGE: ${0##*/} PORT [SSH_OPTIONS] REMOTE"
-    exit 1
-} >&2
+: ${@?"USAGE: ${0##*/} PORT [SSH_OPTIONS] REMOTE"}
 
 ssh -D $1 -C -q -N ${@:2}

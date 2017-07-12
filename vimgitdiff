@@ -1,7 +1,6 @@
 #!/bin/bash
 
 [[ $1 == "--config" ]] && {
-    # me=`basename $0`
     git config --global merge.tool vimgitdiff
     git config --global mergetool.vimgitdiff.cmd 'vimgitdiff $BASE $LOCAL $REMOTE $MERGED'
     git config --global mergetool.vimgitdiff.trustExitCode true
@@ -9,24 +8,18 @@
     exit 0
 }
 
-BASE=$1
-LOCAL=$2
-REMOTE=$3
-MERGED=$4
 # Shell-escapes the variables
-printf -v QBASE '%q' "${BASE}"
-printf -v QLOCAL '%q' "${LOCAL}"
-printf -v QREMOTE '%q' "${REMOTE}"
+printf -v QBASE '%q' "${1}"
+printf -v QLOCAL '%q' "${2}"
+printf -v QREMOTE '%q' "${3}"
+MERGED=$4
 
-merged_remote="${MERGED}.REMOTE.$$.tmp"
-merged_local="${MERGED}.LOCAL.$$.tmp"
+# Create the merged files
+sed -e '/^<<<<<<< /,/^=======$/d' -e '/^>>>>>>> /d' "${MERGED}" > "${merged_remote:="${MERGED}.REMOTE.$$.tmp"}"
+sed -e '/^=======$/,/^>>>>>>> /d' -e '/^<<<<<<< /d' "${MERGED}" > "${merged_local:="${MERGED}.LOCAL.$$.tmp"}"
 
 # Cleanup
 trap 'rm -rf ${merged_remote} ${merged_local}' SIGINT SIGTERM EXIT
-
-# Create the merged files
-sed -e '/^<<<<<<< /,/^=======$/d' -e '/^>>>>>>> /d' "${MERGED}" > "${merged_remote}"
-sed -e '/^=======$/,/^>>>>>>> /d' -e '/^<<<<<<< /d' "${MERGED}" > "${merged_local}"
 
 # Kick off vim
 vim -f -R -d "${merged_local}" "${merged_remote}" \
@@ -41,5 +34,5 @@ vim -f -R -d "${merged_local}" "${merged_remote}" \
     -c ":windo setlocal nomodifiable | tabfirst"
 
 retval=$?
-[[ $retval == "0" ]] && cat "${merged_local}" > "${MERGED}"
+(( $retval == 0 )) && cat "${merged_local}" > "${MERGED}"
 exit $retval

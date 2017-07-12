@@ -1,5 +1,5 @@
-#!/bin/sh
+#!/bin/bash
 
-for a in ${@-`cat`}; do
+for a in ${@-$(cat)}; do
     command -v $a >/dev/null 2>&1 && exec echo $a
 done

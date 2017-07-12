@@ -2,7 +2,7 @@
 
 for n in ${@-$(cat)}; do
     tmux ${cmd-new}-window ${cmd+-d -v} -P -F "Opening: ${n}" "ssh -tYq ${n}"
-    : ${cmd:=split}
+    cmd=split
     tmux select-layout tiled >/dev/null
 done
 

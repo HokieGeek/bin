@@ -8,5 +8,6 @@ if [ "$2" = "--cron" ]; then
     crontab -l
 else
     last=/var/tmp/${0##*/}.last
-    feh --bg-fill $(find $1 -type f ! -wholename "$(cat $last 2>/dev/null)" -print | shuf -n1 | tee $last)
+    feh --bg-fill $(find $1 -type f ! -wholename "$(cat $last 2>/dev/null)" \
+                        -print | shuf -n1 | tee $last)
 fi

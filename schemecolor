@@ -1,10 +1,8 @@
 #!/bin/bash
 
-here=$(cd $(dirname $0); pwd)
-me=${here}/$(basename $0)
+me=$(cd ${0%/*}; pwd)/${0##*/}
 (( $# == 0 )) && {
-    colors=$(${me} --colors | xargs | sed 's/\s/|/g')
-    echo "USAGE: $(basename $0) [${colors}]"
+    echo "USAGE: ${0##*/} [$(${me} --colors | xargs | sed 's/\s/|/g')]"
     exit 1
 }
 
@@ -20,8 +18,8 @@ if [[ "$1" =~ "--cycle" ]]; then
 elif (( $# == 2 )); then
     while (( $# > 0 )); do
         case $1 in
-            [0-9]*) fg_xterm="$1" ;;
-            *) fg_hex="$1" ;;
+        [0-9]*) fg_xterm="$1" ;;
+        *) fg_hex="$1" ;;
         esac
         shift
     done

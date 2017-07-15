@@ -8,6 +8,8 @@ usage() {
     echo "      -q      Quits after performing search instead of starting vim"
 } >&2
 
+: ${@?$(usage "ERROR: No search expression provided")}
+
 while getopts :fiq opt; do
     case $opt in
     f) doFind=true ;;
@@ -18,21 +20,17 @@ while getopts :fiq opt; do
 done
 shift $((OPTIND-1))
 
-: ${@?$(usage "ERROR: No search expression provided")}
-
 if ${doFind:-false}; then
     findCmd="find . -${caseInsensitive:+i}name *${*}*"
     if ${quick:-false}; then
         ${findCmd}
     else
-        vim --cmd "set errorformat=%f:%m" \
-            -q <(${findCmd} -printf "%p:%TY-%Tm-%Td %TH%TM %kKb %u:%g %m\n") \
+        vim -q <(${findCmd} -printf "%p:%TY-%Tm-%Td %TH%TM %kKb %u:%g %m\n") \
             -c "if empty(getqflist())|qa|else|if len(getqflist()) > 1|copen|set nolist|endif|endif"
     fi
 else
     if [[ $(git rev-parse --is-inside-work-tree >/dev/null 2>&1) == "false" ]]; then
-        command -v git-grep-submodules >/dev/null 2>&1 \
-            && grepprg="git-grep-submodules" \
+        grepprg=$(command -v git-grep-submodules 2>/dev/null) \
             || grepprg="git\\ grep\\ --recurse-submodules"
         grepprg+="\\ --line-number\\ --extended-regexp\\ --no-color"
     elif agAck=($(command -v ag ack 2>/dev/null)); then

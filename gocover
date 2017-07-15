@@ -5,8 +5,6 @@
     shift
 }
 
-tmp=$(mktemp)
-
-go test -covermode=count -coverprofile=${tmp} $@
+go test -covermode=count -coverprofile=${tmp:=$(mktemp)} $@
 go tool cover -func=${tmp}
 ${html:-false} && go tool cover -html=${tmp}

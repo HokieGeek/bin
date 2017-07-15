@@ -1,9 +1,8 @@
-#!/bin/sh
+#!/bin/bash
 
-mfu_file="$HOME/.dmenu_run_mfu"
-[ ! -f "${mfu_file}" ] && touch "${mfu_file}"
+[[ ! -f "${mfu_file="$HOME/.dmenu_run_mfu"}" ]] && touch "${mfu_file}"
 
-while [ $# -gt 0 ]; do
+while (( $# > 0 )); do
     case $1 in
     --threshold) shift; threshold=$1  ;;
     --terminal)  shift; terminal="$1" ;;
@@ -42,9 +41,7 @@ dmenu_path \
         }
         next
     }
-    $2 <= ageOut {
-        next
-    }
+    $2 <= ageOut { next }
     NF > 2 {
         ct = $1
         ts = $2

@@ -1,15 +1,10 @@
-#!/bin/sh
+#!/bin/bash
 
-mntpoint=/mnt/kindle
-part=$1
-shift
-files=$@
-
-[ ! -f $mntpoint ] && sudo mkdir -p $mntpoint
+[[ ! -f ${mntpoint=/mnt/kindle} ]] && sudo mkdir -p ${mntpoint}
 echo "Mounting Kindle"
-sudo mount $part $mntpoint
+sudo mount $1 ${mntpoint}
 echo "Copying file(s)"
-sudo cp -v $@ $mntpoint
+sudo cp -v ${@:2} ${mntpoint}
 sync
 echo "Unmounting Kindle"
-sudo umount $mntpoint
+sudo umount ${mntpoint}

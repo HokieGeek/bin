@@ -1,5 +1,3 @@
 #!/bin/bash
 
-: ${@?"USAGE: ${0##*/} PORT [SSH_OPTIONS] REMOTE"}
-
-ssh -D $1 -C -q -N ${@:2}
+ssh -D ${1?"USAGE: ${0##*/} PORT [SSH_OPTIONS] REMOTE"} -C -q -N ${@:2}

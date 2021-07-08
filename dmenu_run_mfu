@@ -28,17 +28,14 @@ dmenu_path \
 ' ${mfu_file} - \
 | dmenu ${dmenu_args[@]} \
 | awk -v shell=${SHELL:-"/bin/sh"} -v terminal=${terminal:-"xterm"} '
-    BEGIN {
-        ageOut = strftime("%s")-((86400 * 7) * 8) # 2 months
-    }
+    BEGIN { ageOut = strftime("%s")-((86400 * 7) * 8) } # 2 months
     FILENAME == "-" && NF > 0 {
         sel = $0
         if (/#$/) {
-            system(sprintf("%s -e \"%s\"&", terminal, gensub(/#$/, "", "g")))
-        } else {
-            print | shell
-            close(shell)
+            $0 = sprintf("%s -e \"%s\"&", terminal, gensub(/#$/, "", "g"))
         }
+        print | shell
+        close(shell)
         next
     }
     $2 <= ageOut { next }
@@ -47,17 +44,17 @@ dmenu_path \
         ts = $2
         $1 = $2 = ""
         gsub(/^[[:space:]]*|[[:space:]]*$/, "")
-        mfu[$0] = ct
+        mfu_ct[$0] = ct
         mfu_ts[$0] = ts
     }
     END {
         if (sel) {
-            mfu[sel]++
+            mfu_ct[sel]++
             mfu_ts[sel] = strftime("%s")
         }
 
         for (cmd in mfu) {
-            printf("%s %s %s\n", mfu[cmd], mfu_ts[cmd], cmd) | sprintf("sort -gr > %s", FILENAME)
+            printf("%s %s %s\n", mfu_ct[cmd], mfu_ts[cmd], cmd) | sprintf("sort -gr > %s", FILENAME)
         }
     }
 ' - ${mfu_file} &
